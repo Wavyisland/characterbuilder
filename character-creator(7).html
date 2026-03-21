@@ -1,0 +1,3013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICRPG Character Creator</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+
+  /* ═══════════════════════════════════════════
+     PUNK DUNGEON — Black / White / Red
+     Oswald headers · Barlow body
+  ═══════════════════════════════════════════ */
+  :root {
+    --bg:        #111111;
+    --surface:   #1a1a1a;
+    --surface2:  #222222;
+    --line:      #333333;
+    --line-bold: #444444;
+    --text:      #f0f0f0;
+    --text-dim:  #999999;
+    --text-dark: #111111;
+    --red:       #dd2200;
+    --red-dark:  #aa1800;
+    --white:     #ffffff;
+    --selected:  #2a1010;
+    --gold:      #dd2200;   /* repurpose gold slots as red */
+    --highlight: #dd2200;
+    /* legacy aliases so JS-generated HTML still works */
+    --ink:          #f0f0f0;
+    --paper:        #1a1a1a;
+    --paper-dark:   #111111;
+    --paper-light:  #222222;
+    --rule:         #333333;
+    --accent:       #dd2200;
+    --accent-light: #ff3320;
+    --muted:        #999999;
+    --field-bg:     #222222;
+    --border-heavy: #dd2200;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0d;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.12'/%3E%3C/svg%3E");
+    font-family: 'Barlow', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 16px 80px;
+  }
+
+  .page-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--surface);
+    border-left: 4px solid var(--red);
+    border-right: 4px solid var(--red);
+    border-top: 4px solid var(--red);
+    border-bottom: 4px solid var(--red);
+    box-shadow: 0 0 0 1px #000, 0 0 40px rgba(221,34,0,0.08), 0 24px 80px rgba(0,0,0,0.9);
+    position: relative;
+  }
+
+  .page-content { position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  .header {
+    background: #000000;
+    padding: 44px 40px 32px;
+    border-top: 2px solid var(--red);
+    text-align: center;
+    border-bottom: 4px solid var(--red);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header::before, .header::after { display: none; }
+
+  .header h1 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 66px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--white);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .header h1 span {
+    color: var(--red);
+  }
+
+  .header-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-top: 6px;
+    min-height: 22px;
+  }
+
+  .step-counter { display: none; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar-wrap {
+    background: #000;
+    height: 5px;
+    width: 100%;
+  }
+
+  .progress-bar-fill {
+    height: 5px;
+    background: var(--red);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    display: flex;
+    gap: 0;
+    background: #111;
+    border-bottom: 1px solid var(--line-bold);
+    flex-wrap: wrap;
+  }
+
+  .toolbar-btn {
+    background: transparent;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    cursor: pointer;
+    border: none;
+    border-right: 1px solid var(--line-bold);
+    color: var(--text-dim);
+    transition: all 0.1s;
+  }
+
+  .toolbar-btn:hover { background: var(--surface2); color: var(--white); }
+  .toolbar-btn.danger:hover { color: var(--red); }
+  .toolbar-btn.magic { color: var(--red); }
+  .toolbar-btn.magic:hover { background: var(--red); color: var(--white); }
+
+  /* ── SECTIONS ── */
+  .section {
+    border-bottom: 1px solid var(--line-bold);
+    padding: 28px 40px 32px;
+    transition: background 0.15s, border-left 0.15s;
+    position: relative;
+  }
+
+  .section::after { display: none; }
+
+  .section.active { background: var(--surface2); border-left: 3px solid var(--red); }
+
+  .section.completed {
+    background: var(--surface);
+    border-left: 4px solid #22aa44;
+  }
+
+  .section.completed .step-num {
+    background: #22aa44;
+    border-color: #22aa44;
+    color: #ffffff;
+  }
+
+  .section.completed .section-title {
+    color: #dddddd;
+  }
+
+  .section.completed .section-title::after {
+    content: ' ✓';
+    color: #22aa44;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  /* No locking — sections always accessible */
+  .section.locked {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .section.skipped {
+    border-left: 3px solid var(--red);
+    background: rgba(221, 34, 0, 0.04);
+  }
+
+  .section.skipped .step-num {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+  }
+
+  .section.skipped .section-title::after {
+    content: ' — come back to this';
+    font-family: 'Barlow', sans-serif;
+    font-weight: 400;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--red);
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    cursor: default;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .step-num {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--white);
+    background: var(--red);
+    text-transform: uppercase;
+    padding: 4px 10px;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  .section-hint {
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #777777;
+    line-height: 1.65;
+    margin-bottom: 20px;
+    padding-left: 12px;
+    border-left: 2px solid var(--line-bold);
+  }
+
+  .section.completed:not(#sec-1) .section-header:hover .section-title {
+    color: var(--red);
+  }
+
+  /* Collapse removed — sections always fully visible */
+
+  /* ── SPELL TRIGGER ── */
+  .spell-trigger-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .spell-trigger-btn {
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: background 0.1s;
+    flex-shrink: 0;
+  }
+
+  .spell-trigger-btn:hover { background: var(--red-dark); }
+
+  .spell-trigger-btn.complete {
+    background: #22aa44;
+  }
+
+  .spell-trigger-status {
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .spell-trigger-status.done {
+    color: #22aa44;
+    font-weight: 600;
+  }
+
+  /* ── CHOICE CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px;
+  }
+
+  .choice-card {
+    transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+    border: 2px solid var(--line-bold);
+    background: var(--surface2);
+    padding: 16px 12px;
+    cursor: pointer;
+    transition: all 0.1s;
+    user-select: none;
+    text-align: center;
+  }
+
+  .choice-card:hover { border-color: var(--white); background: #242424; box-shadow: inset 3px 0 0 var(--red); }
+
+  .choice-card.selected {
+    border-color: var(--red);
+    background: var(--selected);
+    box-shadow: inset 0 0 0 1px var(--red);
+  }
+
+  .choice-card .card-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  .choice-card .card-ability {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-top: 4px;
+  }
+
+  /* ── STAT ROLLER ── */
+  .roll-area { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+  .roll-btn {
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .roll-btn:hover { background: var(--red-dark); }
+  .roll-results { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .rolled-stat {
+    border: 2px solid var(--line-bold);
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 90px;
+    transition: all 0.3s;
+  }
+
+  .rolled-stat.fresh {
+    border-color: var(--red);
+    background: var(--selected);
+    animation: pop 0.3s ease;
+  }
+
+  @keyframes pop {
+    0%   { transform: scale(0.9); opacity: 0.5; }
+    60%  { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .rolled-stat .stat-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+
+  .rolled-stat .stat-val {
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--red);
+  }
+
+  /* ── STAT ALLOCATOR ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+
+  .effort-grid-el {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .stat-row {
+    border: 2px solid var(--line-bold);
+    background: var(--surface2);
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    position: relative;
+  }
+
+  .stat-row.has-bonus {
+    border-color: var(--red);
+    background: var(--selected);
+  }
+
+  /* ── STAT TOOLTIP ── */
+  .stat-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 8px 12px;
+    width: 180px;
+    text-align: center;
+    z-index: 100;
+    pointer-events: none;
+    border: 1px solid var(--line-bold);
+  }
+
+  .stat-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #000;
+  }
+
+  .stat-row:hover .stat-tooltip { display: block; }
+
+  .stat-row .stat-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .stat-row .stat-bonus {
+    font-size: 12px;
+    color: var(--red);
+  }
+
+  .stepper { display: flex; align-items: center; gap: 4px; }
+
+  .stepper button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--line-bold);
+    background: var(--surface);
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: all 0.1s;
+    color: var(--white);
+  }
+
+  .stepper button:hover:not(:disabled) {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+  }
+
+  .stepper button:disabled { opacity: 0.2; cursor: default; }
+
+  .stepper .val {
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    min-width: 26px;
+    text-align: center;
+    color: var(--white);
+  }
+
+  .points-remaining {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #000;
+    color: var(--text);
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    margin-bottom: 16px;
+    border: 1px solid var(--line-bold);
+  }
+
+  .points-remaining .pts-num {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--red);
+  }
+
+  /* ── SPELL PICKER ── */
+  .spell-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #000;
+    color: var(--text);
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 7px 16px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line-bold);
+  }
+
+  .spell-counter .pts-num {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--red);
+  }
+
+  .spell-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 5px;
+    margin-bottom: 14px;
+  }
+
+  .spell-card {
+    transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+    border: 1px solid var(--line-bold);
+    background: var(--surface2);
+    padding: 10px 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: all 0.1s;
+    user-select: none;
+  }
+
+  .spell-card:hover { border-color: var(--white); box-shadow: inset 3px 0 0 var(--red); }
+
+  .spell-card.selected {
+    border-color: var(--red);
+    background: var(--selected);
+  }
+
+  .spell-card.disabled:not(.selected) { opacity: 0.3; cursor: default; }
+
+  .spell-check {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--line-bold);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    background: var(--surface);
+    transition: all 0.1s;
+  }
+
+  .spell-card.selected .spell-check {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+  }
+
+  .spell-card-text { flex: 1; }
+
+  .spell-card-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .spell-card-desc {
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.55;
+  }
+
+  .spell-writein-label {
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  /* ── LOOT PICKER ── */
+  .loot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 5px;
+  }
+
+  .loot-item {
+    transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+    border: 1px solid var(--line-bold);
+    background: var(--surface2);
+    padding: 11px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: all 0.1s;
+    user-select: none;
+  }
+
+  .loot-item:hover { border-color: var(--white); box-shadow: inset 3px 0 0 var(--red); }
+
+  .loot-item.selected {
+    border-color: var(--red);
+    background: var(--selected);
+    box-shadow: inset 3px 0 0 var(--red);
+  }
+
+  .loot-item.disabled:not(.selected) { opacity: 0.3; cursor: default; }
+
+  .loot-check {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--line-bold);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    background: var(--surface);
+    transition: all 0.1s;
+  }
+
+  .loot-item.selected .loot-check {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+  }
+
+  .loot-item-text { flex: 1; }
+
+  .loot-item-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .loot-item-desc {
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.55;
+  }
+
+  /* ── TEXT FIELDS ── */
+  .name-label {
+    display: block;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+
+  .name-field {
+    width: 100%;
+    max-width: 360px;
+    background: #000;
+    border: 2px solid var(--line-bold);
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .name-field:focus { border-color: var(--red); }
+  .name-field::placeholder { color: var(--line-bold); font-weight: 400; }
+
+  .story-field {
+    width: 100%;
+    background: #000;
+    border: 2px solid var(--line-bold);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    padding: 12px 14px;
+    resize: none;
+    line-height: 1.7;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  .story-field:focus { border-color: var(--red); }
+  .story-field::placeholder { color: var(--line-bold); }
+
+  .char-count {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-align: right;
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── TYPE SUB-SECTION ── */
+  .sub-section {
+    margin-top: 20px;
+    border-top: 1px solid var(--line-bold);
+    padding-top: 16px;
+  }
+
+  .sub-section-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 12px;
+  }
+
+  .sub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 6px;
+  }
+
+  .sub-card {
+    transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+    border: 1px solid var(--line-bold);
+    background: var(--surface2);
+    padding: 13px 15px;
+    cursor: pointer;
+    transition: all 0.1s;
+    user-select: none;
+  }
+
+  .sub-card:hover { border-color: var(--white); box-shadow: inset 3px 0 0 var(--red); }
+
+  .sub-card.selected {
+    border-color: var(--red);
+    background: var(--selected);
+    box-shadow: inset 3px 0 0 var(--red);
+  }
+
+  .sub-card .sub-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .sub-card .sub-text {
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── TYPE CARDS ── */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 6px;
+  }
+
+  .type-card {
+    transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+    border: 1px solid var(--line-bold);
+    background: var(--surface2);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.1s;
+    user-select: none;
+    text-align: center;
+  }
+
+  .type-card:hover { border-color: var(--white); box-shadow: inset 0 -3px 0 var(--red); }
+
+  .type-card.selected {
+    border-color: var(--red);
+    background: var(--selected);
+    box-shadow: inset 0 -3px 0 var(--red);
+  }
+
+  .type-card .type-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .type-card .type-ability {
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* ── SKIP BUTTON ── */
+  .step1-actions {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .skip-btn {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px dashed var(--line-bold);
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .skip-btn:hover { border-color: var(--text-dim); color: var(--white); }
+
+  /* ── SUBMIT ── */
+  .submit-section {
+    padding: 32px 40px;
+    text-align: center;
+    background: #000;
+    border-top: 3px solid var(--red);
+  }
+
+  .submit-btn {
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    padding: 18px 64px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: inline-block;
+  }
+
+  .submit-btn:hover:not(:disabled) { background: var(--red-dark); }
+  .submit-btn:disabled { opacity: 0.25; cursor: default; }
+
+  .submit-btn.success {
+    background: #1a6020;
+    letter-spacing: 0.3em;
+    pointer-events: none;
+  }
+
+  .incomplete-list {
+    margin-top: 20px;
+    min-height: 0;
+  }
+
+  .incomplete-header {
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .incomplete-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .incomplete-item {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.85;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .incomplete-item:hover {
+    background: var(--red);
+    color: var(--white);
+    opacity: 1;
+  }
+
+  .incomplete-item::before {
+    content: '✕';
+    font-size: 10px;
+  }
+
+  /* ── SHEET OUTPUT ── */
+  #sheet-output { display: block; }
+
+  .sheet-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 50px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 4px;
+    text-align: left;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .sheet-stamp {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--line-bold);
+    padding-bottom: 12px;
+  }
+
+  .sheet-block { margin-bottom: 24px; }
+
+  .sheet-block-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--red);
+    padding-bottom: 6px;
+    opacity: 0.9;
+  }
+
+  .sheet-stats-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .sheet-stat-box {
+    border: 1px solid var(--line-bold);
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 85px;
+  }
+
+  .sheet-stat-box .ss-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 3px;
+  }
+
+  .sheet-stat-box .ss-val {
+    font-family: 'Oswald', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .sheet-stat-box .ss-bonus {
+    font-size: 11px;
+    color: var(--red);
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .sheet-loot-list { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  .sheet-loot-tag {
+    border: 1px solid var(--line-bold);
+    background: var(--surface2);
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    color: var(--white);
+  }
+
+  .sheet-story {
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text);
+    background: #000;
+    border-left: 3px solid var(--red);
+    padding: 12px 18px;
+  }
+
+  /* ── SHEET ITEM CARDS ── */
+  .sheet-item-card {
+    border: 1px solid var(--line-bold);
+    background: var(--surface2);
+    padding: 12px 16px;
+    margin-bottom: 6px;
+  }
+
+  .sheet-item-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 5px;
+  }
+
+  .sheet-item-desc {
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── COPY BUTTON ── */
+  .sheet-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line-bold);
+  }
+
+  .copy-btn, .print-btn {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--line-bold);
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .copy-btn:hover, .print-btn:hover {
+    border-color: var(--white);
+    color: var(--white);
+  }
+
+  .copy-btn.copied { border-color: var(--red); color: var(--red); }
+
+  /* ── WARN MESSAGES ── */
+  .warn-msg {
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    color: var(--red);
+    margin-top: 10px;
+    display: none;
+  }
+
+  .warn-msg.visible { display: block; }
+
+  /* ── FOCUS STYLES ── */
+  :focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+
+  .choice-card:focus-visible,
+  .type-card:focus-visible,
+  .sub-card:focus-visible,
+  .loot-item:focus-visible,
+  .spell-card:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+    border-color: var(--red);
+  }
+
+  @media (max-width: 600px) {
+    .header h1 { font-size: 44px; }
+    .section { padding: 20px 20px; }
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .loot-grid { grid-template-columns: 1fr; }
+    .spell-grid { grid-template-columns: 1fr; }
+    .sub-grid { grid-template-columns: 1fr; }
+    .type-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-grid { grid-template-columns: repeat(3, 1fr); }
+    .effort-grid-el { grid-template-columns: repeat(2, 1fr); }
+    .modal-box { margin: 0; }
+    .modal-header { flex-direction: column; gap: 12px; }
+    .modal-body { padding: 20px; }
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 1000;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 32px 16px 60px;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background: var(--surface);
+    border: 3px solid var(--red);
+    width: 100%;
+    max-width: 860px;
+    box-shadow: 0 0 0 1px rgba(221,34,0,0.3), 0 0 80px rgba(221,34,0,0.2), 0 24px 80px rgba(0,0,0,0.95);
+    animation: modal-in 0.2s ease;
+  }
+
+  @keyframes modal-in {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px 32px 20px;
+    background: #000;
+    border-bottom: 2px solid var(--line-bold);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .modal-header-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .modal-close {
+    background: transparent;
+    border: 2px solid var(--line-bold);
+    color: var(--text-dim);
+    font-family: 'Oswald', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.1s;
+    width: 100%;
+  }
+
+  .modal-close:hover { border-color: var(--red); color: var(--red); }
+
+  .modal-copy-icon {
+    background: transparent;
+    border: 2px solid var(--line-bold);
+    color: var(--text-dim);
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .modal-copy-icon:hover { border-color: var(--white); color: var(--white); }
+  .modal-copy-icon.copied { border-color: var(--red); color: var(--red); }
+
+  .modal-close-bottom {
+    background: transparent;
+    border: 2px solid var(--line-bold);
+    color: var(--text-dim);
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .modal-close-bottom:hover { border-color: var(--red); color: var(--red); }
+
+  .modal-body { padding: 32px; }
+
+  /* Sheet output always visible inside modal */
+  #sheet-output { display: block !important; }
+
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <div class="page-content">
+
+    <!-- HEADER -->
+    <div class="header">
+      <h1>ICRPG <span>Character Creator</span></h1>
+      <div class="header-name" id="header-name"></div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-bar"></div>
+    </div>
+    <div class="toolbar">
+      <button class="toolbar-btn magic" onclick="randomizeCharacter()">✦ Random Character</button>
+      <button class="toolbar-btn danger" onclick="startOver()">↺ Start Over</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         STEP 1 — NAME & STORY
+    ══════════════════════════════════════════ -->
+    <div class="section active" id="sec-1">
+      <div class="section-header">
+        <span class="step-num">Step 01</span>
+        <span class="section-title">Name &amp; Story</span>
+      </div>
+      <div class="section-body">
+        <p class="section-hint">Give your character a name, then write one sentence about what is happening RIGHT NOW — what pushed you from the ordinary into adventure?</p>
+        <label class="name-label" for="name-field">CHARACTER NAME</label>
+        <input type="text" class="name-field" id="name-field" maxlength="60" placeholder="e.g. Maren Ashveil" oninput="onStoryInput()" />
+        <label class="name-label" style="margin-top:14px;" for="story-field">1-LINE STORY</label>
+        <textarea class="story-field" id="story-field" rows="3" maxlength="200" placeholder="e.g. My village burned last night — and I recognized the man who lit the torch." oninput="onStoryInput()"></textarea>
+        <div class="char-count"><span id="char-count">0</span> / 200</div>
+        <p class="warn-msg" id="story-warn">Enter a name and write at least one sentence to continue.</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         STEP 2 — LIFEFORM
+    ══════════════════════════════════════════ -->
+    <div class="section locked" id="sec-2">
+      <div class="section-header">
+        <span class="step-num">Step 02</span>
+        <span class="section-title">Choose Your Lifeform</span></div>
+      <div class="section-body">
+        <p class="section-hint">Choose the ancestry of your character.</p>
+        <div class="card-grid" id="lifeform-cards"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         STEP 3 — TYPE
+    ══════════════════════════════════════════ -->
+    <div class="section locked" id="sec-3">
+      <div class="section-header">
+        <span class="step-num">Step 03</span>
+        <span class="section-title">Choose Your Type</span></div>
+      <div class="section-body">
+        <p class="section-hint">Choose your role, then pick a Starting Ability and Starting Loot.</p>
+        <div class="type-grid" id="type-cards"></div>
+        <div id="type-sub" style="display:none;">
+          <div class="sub-section">
+            <div class="sub-section-label">Starting Ability — Choose 1</div>
+            <div class="sub-grid" id="ability-cards"></div>
+          </div>
+          <div class="sub-section">
+            <div class="sub-section-label">Starting Loot — Choose 1</div>
+            <div class="sub-grid" id="loot-type-cards"></div>
+          </div>
+          <div class="sub-section" id="spell-trigger-section" style="display:none;">
+            <div class="spell-trigger-row">
+              <div class="spell-trigger-status" id="spell-trigger-status"></div>
+              <button class="spell-trigger-btn" id="spell-trigger-btn" onclick="openSpellPicker()"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         STEP 4 — ROLL BONUS STATS
+    ══════════════════════════════════════════ -->
+    <div class="section locked" id="sec-4">
+      <div class="section-header">
+        <span class="step-num">Step 04</span>
+        <span class="section-title">Roll Bonus Stats</span></div>
+      <div class="section-body">
+        <p class="section-hint">Roll to randomly assign 2 bonus points to your stats or effort — fate decides your natural gifts.</p>
+        <div class="roll-area">
+          <button class="roll-btn" id="roll-btn" onclick="rollBonusStats()">▶ Roll 2 Bonuses</button>
+          <div class="roll-results" id="roll-results"></div>
+        </div>
+        <p class="warn-msg" id="roll-warn">Roll your bonus stats before continuing.</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         STEP 5 — ASSIGN STAT POINTS
+    ══════════════════════════════════════════ -->
+    <div class="section locked" id="sec-5">
+      <div class="section-header">
+        <span class="step-num">Step 05</span>
+        <span class="section-title">Assign 6 Stat Points</span></div>
+      <div class="section-body">
+        <p class="section-hint">Distribute 6 points among your 6 STATS in any combination.</p>
+        <div class="points-remaining">
+          <span>Points Remaining:</span>
+          <span class="pts-num" id="stat-pts">6</span>
+        </div>
+        <div class="stat-grid" id="stat-grid"></div>
+        <p class="warn-msg" id="stat-warn">Spend all 6 points before continuing.</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         STEP 6 — ASSIGN EFFORT POINTS
+    ══════════════════════════════════════════ -->
+    <div class="section locked" id="sec-6">
+      <div class="section-header">
+        <span class="step-num">Step 06</span>
+        <span class="section-title">Assign 4 Effort Points</span></div>
+      <div class="section-body">
+        <p class="section-hint">Distribute 4 points among the 4 EFFORT types.</p>
+        <div class="points-remaining">
+          <span>Points Remaining:</span>
+          <span class="pts-num" id="effort-pts">4</span>
+        </div>
+        <div class="stat-grid effort-grid-el" id="effort-grid"></div>
+        <p class="warn-msg" id="effort-warn">Spend all 4 points before continuing.</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         STEP 7 — BASIC LOOT
+    ══════════════════════════════════════════ -->
+    <div class="section locked" id="sec-7">
+      <div class="section-header">
+        <span class="step-num">Step 07</span>
+        <span class="section-title">Choose 4 Basic Loot</span></div>
+      <div class="section-body">
+        <p class="section-hint">Pack your bag. Pick 4 items from the gear list below.</p>
+        <div class="points-remaining" id="loot-counter">
+          <span>Items Remaining:</span>
+          <span class="pts-num" id="loot-pts">4</span>
+        </div>
+        <div class="loot-grid" id="loot-grid"></div>
+        <p class="warn-msg" id="loot-warn">Choose exactly 4 items to continue.</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         SUBMIT
+    ══════════════════════════════════════════ -->
+    <div class="submit-section" id="submit-section">
+      <button class="submit-btn" id="submit-btn" onclick="finalizeCharacter()" disabled>
+        ◆ Finalize Character Sheet ◆
+      </button>
+      <div class="incomplete-list" id="incomplete-list"></div>
+    </div>
+
+  </div><!-- .page-content -->
+</div><!-- .page-wrap -->
+
+<!-- ══════════════════════════════════════════
+     SPELL PICKER MODAL
+══════════════════════════════════════════ -->
+<div id="spell-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="sheet-title" id="spell-modal-title">Choose Spells</div>
+        <div class="sheet-stamp" id="spell-modal-stamp"></div>
+      </div>
+      <button class="modal-close" onclick="closeSpellPicker()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="spell-counter" id="spell-counter"></div>
+      <div class="spell-grid" id="spell-grid"></div>
+      <div class="spell-writein-label">Don't see what you want? Write in additional spells (comma separated):</div>
+      <textarea class="story-field" id="custom-spells-field" rows="2" maxlength="300" placeholder="e.g. LIGHTNING BOLT, DOORWAY" oninput="onCustomSpellsInput()"></textarea>
+      <div style="margin-top:16px;">
+        <button class="submit-btn" id="spell-confirm-btn" onclick="closeSpellPicker()" style="font-size:13px;padding:12px 32px;">
+          Confirm Spells
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SHEET MODAL
+══════════════════════════════════════════ -->
+<div id="sheet-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="sheet-title" id="out-name">— CHARACTER SHEET —</div>
+        <div class="sheet-stamp" id="out-stamp">LIFEFORM · TYPE · FINALIZED</div>
+      </div>
+      <div class="modal-header-actions">
+        <button class="modal-close" onclick="closeSheet()" aria-label="Close">✕</button>
+        <button class="modal-copy-icon" id="modal-copy-icon" onclick="copySheet()" aria-label="Copy to clipboard" title="Copy to clipboard">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body" id="sheet-output">
+
+      <div class="sheet-block">
+        <div class="sheet-block-label">1-Line Story</div>
+        <div class="sheet-story" id="out-story"></div>
+      </div>
+
+      <div class="sheet-block">
+        <div class="sheet-block-label">Core</div>
+        <div class="sheet-stats-row" id="out-core"></div>
+      </div>
+
+      <div class="sheet-block">
+        <div class="sheet-block-label">Stats</div>
+        <div class="sheet-stats-row" id="out-stats"></div>
+      </div>
+
+      <div class="sheet-block">
+        <div class="sheet-block-label">Effort</div>
+        <div class="sheet-stats-row" id="out-effort"></div>
+      </div>
+
+      <div class="sheet-block">
+        <div class="sheet-block-label">Starting Ability &amp; Loot</div>
+        <div id="out-ability-loot"></div>
+      </div>
+
+      <div class="sheet-block">
+        <div class="sheet-block-label">Basic Loot</div>
+        <div id="out-loot"></div>
+      </div>
+
+      <div class="sheet-block" id="out-spells-block" style="display:none;">
+        <div class="sheet-block-label">Starting Spells</div>
+        <div id="out-spells"></div>
+      </div>
+
+      <div class="sheet-actions">
+        <button class="copy-btn" id="copy-btn" onclick="copySheet()">⊕ Copy to Clipboard</button>
+        <button class="modal-close-bottom" onclick="closeSheet()">✕ Close &amp; Edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────
+
+const LIFEFORMS = [
+  { id: 'human',  name: 'Human'  },
+  { id: 'elf',    name: 'Elf'    },
+  { id: 'dwarf',  name: 'Dwarf'  },
+  { id: 'goblin', name: 'Goblin' },
+  { id: 'torton', name: 'Torton' },
+];
+
+const TYPES = [
+  {
+    id: 'warrior',
+    name: 'Warrior',
+    desc: 'A master of steel who can take a beating',
+    abilities: [
+      { id: 'slayer',     name: 'SLAYER',     text: 'If attacking an enemy you have already harmed, do ULTIMATE damage' },
+      { id: 'defender',   name: 'DEFENDER',   text: 'Allies within CLOSE range of you may use your DEFENSE STAT' },
+      { id: 'pitfighter', name: 'PIT FIGHTER', text: 'When you take damage, add the amount of the last hit against you to the next hit you make' },
+    ],
+    lootOptions: [
+      { id: 'weapongem',   name: 'WEAPON GEM',       text: 'Customize any 1 WEAPON with a special counterweight. Give this WEAPON a +2 EFFORT bonus. The gem cannot be removed' },
+      { id: 'shieldglove', name: 'SHIELD GLOVE',      text: 'A strapped glove and belt harness for carrying shields. Shields occupy no space in your INVENTORY' },
+      { id: 'standard',   name: 'BATTLE STANDARD',   text: 'A tabard or banner with your inspiring war insignia. Choose 1 ally per ROUND, their next roll is EASY' },
+    ],
+  },
+  {
+    id: 'hunter',
+    name: 'Hunter',
+    desc: 'A marksman with a knack for survival',
+    abilities: [
+      { id: 'quickdraw', name: 'QUICK DRAW',   text: 'On a ranged attack roll of modified 15+, fire again' },
+      { id: 'deadeye',   name: 'DEAD EYE',     text: 'Use one TURN to aim. Your next successful hit deals max damage' },
+      { id: 'trap',      name: 'TRAP EXPERT',  text: 'Your traps damage all victims NEAR the trap when tripped' },
+    ],
+    lootOptions: [
+      { id: 'scope',      name: 'CRYSTAL SCOPE',      text: 'Attach this glass contraption to any 1 ranged WEAPON. Never roll HARD to hit with that WEAPON' },
+      { id: 'cartridge',  name: 'ARCANE CARTRIDGE',   text: 'An enchanted steel sleeve imbues your ammunition with a spark of magic. Your shots inflict ENERGY damage' },
+      { id: 'launcher',   name: 'TRAP LAUNCHER',      text: 'With this spring-loaded gadget, roll a ranged attack to place traps at range' },
+    ],
+  },
+  {
+    id: 'shadow',
+    name: 'Shadow',
+    desc: 'A master of stealth and subterfuge',
+    abilities: [
+      { id: 'assassin', name: 'ASSASSIN', text: 'If a target does not know you are there, your first attack cannot miss' },
+      { id: 'thief',    name: 'THIEF',    text: 'Your stealth rolls are always EASY' },
+      { id: 'scout',    name: 'SCOUT',    text: 'When using WIS to seek out details or hidden truths, roll EASY' },
+    ],
+    lootOptions: [
+      { id: 'daggerkit',   name: 'DAGGER KIT',    text: 'A set of three masterwork blades score critical hits on natural 18, 19, or 20 rolls' },
+      { id: 'spiderclaws', name: 'SPIDER CLAWS',  text: 'With these special clawed gloves, you can move as normal on any surface, including ceilings' },
+      { id: 'pocketcloak', name: 'POCKET CLOAK',  text: 'A special cloak with 2 versions: Treat all CARRIED inventory spaces as EQUIPPED or add 10 CARRIED spaces to your inventory' },
+    ],
+  },
+  {
+    id: 'bard',
+    name: 'Bard',
+    desc: 'An inspiring and devious tale-teller',
+    abilities: [
+      { id: 'hymn',     name: 'BATTLE HYMN', text: 'Provide music with a CHA roll, reduce allies TARGET by 2' },
+      { id: 'provoker', name: 'PROVOKER',    text: 'Hurl insults at any 1 enemy, they cannot resist dueling with you' },
+      { id: 'thespian', name: 'THESPIAN',    text: 'With a CHA roll, you can convince subjects of even wildly ridiculous fibs. Their belief in your farce will last 1D4 ROUNDS per roll made' },
+    ],
+    lootOptions: [
+      { id: 'instrument', name: 'FINE INSTRUMENT', text: 'Your Battle Hymns grant each ally a D8 to boost any 1 roll' },
+      { id: 'heirloom',   name: 'HEIRLOOM',        text: 'Your weapon is a treasure. Always do ULTIMATE when dueling' },
+      { id: 'revcloak',   name: 'REVERSE CLOAK',   text: 'A modular costume cape. Your fibs last 2D4 ROUNDS' },
+    ],
+  },
+  {
+    id: 'mage',
+    name: 'Mage',
+    desc: 'A collector and conduit of arcane secrets',
+    abilities: [
+      { id: 'scholar',   name: 'SPELL SCHOLAR', text: 'If you find a written SPELL, gain an extra SPELL' },
+      { id: 'wildpower', name: 'WILD POWER',    text: 'Any time you roll a max die, roll it again' },
+      { id: 'darkpact',  name: 'DARK PACT',     text: 'Sacrifice any amount of your HP to boost any 1 roll' },
+    ],
+    lootOptions: [
+      { id: 'grimoire', name: 'ASTRAL GRIMOIRE', text: 'Your SPELL book is drawn to you by a subtle kinetic force. Gain any 3 INT SPELLS instantly. The book will slide toward you if it can' },
+      { id: 'ring',     name: 'MEMORY RING',     text: 'Gain any 3 INT SPELLS. On any TURN when not casting a SPELL, roll 1D6. Keep that die for use later on any 1 roll. Store up to 6D6' },
+      { id: 'skull',    name: 'THE MASTERS SKULL', text: 'A small, demonic skull. Fill this skull with blood to store 10 points of HP. Use this HP to heal, or as part of your Dark Pact ABILITY' },
+    ],
+  },
+  {
+    id: 'priest',
+    name: 'Priest',
+    desc: 'A righteous avatar of divine might',
+    abilities: [
+      { id: 'elemental', name: 'ELEMENTAL', text: 'Nature or weather magic is always EASY to cast' },
+      { id: 'healer',    name: 'HEALER',    text: 'Any healing magic you cast does ULTIMATE EFFORT' },
+      { id: 'monk',      name: 'MONK',      text: 'Use your WIS STAT when making unarmed attacks' },
+    ],
+    lootOptions: [
+      { id: 'greenstaff', name: 'GREENSTAFF',     text: 'Store your elemental magic in a wooden staff. Gain any 3 WIS SPELLS instantly. If your staff is lost, it comically turns up in 1D4 ROUNDS' },
+      { id: 'booktruth',  name: 'BOOK OF TRUTHS', text: 'A tome of religious texts. Gain any 5 WIS SPELLS instantly, but if the book is lost or destroyed, the SPELLS are gone' },
+      { id: 'amberbeads', name: 'AMBER BEADS',    text: 'A necklace of large orange spheres gives you focus. Gain any 1 WIS SPELL. That SPELL dwells within the beads, and only fails on a natural 1' },
+    ],
+  },
+  {
+    id: 'paladin',
+    name: 'Paladin',
+    desc: 'A battle-tested champion of honor and virtue',
+    abilities: [
+      { id: 'smite',      name: 'SMITE',       text: 'When you swing your blade, it is swung with purpose! Reroll any result of 1 on your EFFORT when dealing damage' },
+      { id: 'prayer',     name: 'PRAYER',      text: 'Heal a wounded ally for 1 HP with a CHA roll' },
+      { id: 'armorborn',  name: 'ARMOR BORN',  text: 'You are comfortable wearing and carrying armor. Armor and shields do not affect DEX or inventory limits' },
+    ],
+    lootOptions: [
+      { id: 'holyrelic',  name: 'HOLY RELIC',           text: 'Bless a weapon with a sacred oath. Attacks made with this holy weapon use CHA' },
+      { id: 'blessedarmor', name: 'BLESSED ARMOR',      text: '+1 DEF, MIRACLES occur for you on an 18, 19, or 20' },
+      { id: 'libram',     name: 'LIBRAM OF CONVICTION', text: 'A tome of Prayers containing up to 2 CHA spells. If this item is destroyed or lost, casting these spells becomes HARD' },
+    ],
+  },
+  {
+    id: 'mystic',
+    name: 'Mystic',
+    desc: 'An eldritch channeler of charismatic force and will',
+    abilities: [
+      { id: 'chant',        name: 'CHANT',         text: 'Extend the duration of any spell by forgoing your MOVE and ACTION' },
+      { id: 'ogdrusign',    name: 'OGDRU SIGN',    text: 'Show the sign of the Ogdru. Everything CLOSE to you makes a CHA roll or makes a FAR move away from you' },
+      { id: 'steadyyourself', name: 'STEADY YOURSELF', text: 'When RECOVERING, use CHA instead of CON' },
+    ],
+    lootOptions: [
+      { id: 'daggundagger',       name: 'DAGGUN DAGGER',         text: 'Enemies hit attack a random target on their next TURN' },
+      { id: 'crystalball',        name: 'CRYSTAL BALL',          text: 'Gain any 1 CHA SPELL. As an action, peer into the future and gain an EASY roll in D4 ROUNDS' },
+      { id: 'stafftransmutation', name: 'STAFF OF TRANSMUTATION', text: 'Gain up to 2 CHA SPELLS. Transform your staff into a snake, frog, or rat for D4 ROUNDS. They will follow basic commands' },
+    ],
+  },
+  {
+    id: 'witch',
+    name: 'Witch',
+    desc: 'A crafty heretic and practitioner of esoteric magic',
+    abilities: [
+      { id: 'hexbinder',    name: 'HEX BINDER',     text: 'Roll CHA to hex a creature you can see. Add your CHA BONUS to all attack rolls you and your allies make against it. Only one hex can be placed at a time' },
+      { id: 'brashcaster', name: 'BRASH CASTER',    text: 'A HARD spell casting roll increases the spell\'s POWER by 1' },
+      { id: 'potionbrewer', name: 'POTION BREWER',  text: 'Bottle basic spell effects with an EASY INT roll and 3 RARE INGREDIENTS' },
+    ],
+    lootOptions: [
+      { id: 'ritualblade',      name: 'RITUAL BLADE',       text: 'A melee WEAPON etched with runes. Gain 1 CHA SPELL. Spend 1 TURN to add MAGIC to your next attack with this blade' },
+      { id: 'gnarledbroom',     name: 'GNARLED BROOM',      text: 'Gain 2 CHA SPELLS. Roll CHA to command your broom to carry you DOUBLE FAR' },
+      { id: 'apothecary',       name: 'APOTHECARY CABINET', text: 'A small folding case of vials and jars. Holds 12 random RARE INGREDIENTS' },
+    ],
+  },
+];
+
+const INT_SPELLS = [
+  { id: 'arcane_bomb',       name: 'ARCANE BOMB',        desc: 'An orb of light forms in one hand. Once placed, it explodes in 1D4 ROUNDS, inflicting 4D12 damage on everything within NEAR range' },
+  { id: 'arcane_missile',    name: 'ARCANE MISSILE',     desc: 'Hurl a shard of pure arcane energy at a target you can see. If only doing 1 damage, the missile ricochets, hitting a second target' },
+  { id: 'arns_hex',          name: 'ARNS HEX',           desc: 'Use eldritch words to rot a living target from within. The rot inflicts MAGIC each ROUND for 1D4 ROUNDS' },
+  { id: 'aazuls_conjure',    name: 'AAZULS CONJURATION', desc: 'Open a brimstone portal to summon 1D4 imps. The demons have 1 HP, bite for WEAPON damage, and mostly obey' },
+  { id: 'blade_aura',        name: 'BLADE AURA',         desc: 'Armor an ally you touch with daggers of energy. Those harming that ally take WEAPON damage. Lasts until your next cast' },
+  { id: 'control_machines',  name: 'CONTROL MACHINES',   desc: "Overcome a machine's HP with your EFFORT to take control of it utterly. Machines, if aware, can roll CHA each ROUND to break free" },
+  { id: 'counter_spell',     name: 'COUNTER SPELL',      desc: 'Any time you see an INT SPELL cast, roll immediately, cancel it with this SPELL. If you fail, you are overwhelmed and take 1D8 damage' },
+  { id: 'create_device',     name: 'CREATE DEVICE',      desc: 'Provide a detailed description of a mechanical device of your mass or less. Create instantly on modified 12+, otherwise complete in 1 ROUND' },
+  { id: 'crystal_sanctuary', name: 'CRYSTAL SANCTUARY',  desc: 'Form a grid of hexagonal energy shields. All allies within NEAR range now have +3 DEFENSE. Lasts until you are harmed or your next cast' },
+  { id: 'curse_of_ord',      name: 'CURSE OF ORD',       desc: 'With a HARD INT roll, and extreme care of exact wording, place a curse on a target you touch. It is permanent until somehow dispelled' },
+  { id: 'death_nova',        name: 'DEATH NOVA',         desc: 'With no roll, overload your power and explode. Sacrifice any amount of HP, add to 2D12 damage. All within FAR range roll DEFENSE to avoid' },
+  { id: 'destroy_dead',      name: 'DESTROY THE DEAD',   desc: 'Give your own blood to annihilate an undead creature. Roll INT to cast. For each 1 HP sacrificed, destroy 1 HEART of undead' },
+  { id: 'detect_evil',       name: 'DETECT EVIL',        desc: 'Detect evidence of despicable deeds or malevolence within your current location. A green glow will reveal creatures, objects, or enchantments' },
+  { id: 'dominate_monster',  name: 'DOMINATE MONSTER',   desc: 'Take total control of any monstrous creature in sight for 1D4 ROUNDS. If failed to cast, the monster is enraged at you until defeated' },
+  { id: 'doorway',           name: 'DOORWAY',            desc: 'Create a magical doorway from your present location to any location you have been before. The door remains open 1D4 ROUNDS' },
+  { id: 'fireball',          name: 'FIREBALL',           desc: 'Conjure an incendiary sphere of destruction. Blast everything within NEAR range of a designated location you can see, ignite any flammables' },
+  { id: 'fire_missile',      name: 'FIRE MISSILE',       desc: 'Fire a precise bolt of flame at a target within FAR range, ignites flammable objects' },
+  { id: 'growth_ray',        name: 'GROWTH RAY',         desc: 'Increase one target to 3x its size for 1 ROUND. Add +3 to all its STATS, but it retains its normal HP' },
+  { id: 'hammer_stone',      name: 'HAMMER STONE',       desc: 'Conjure a giant cube of stone above a location. In 1D4 ROUNDS it drops, utterly crushing anything below with 3 HEARTS or less' },
+  { id: 'identify',          name: 'IDENTIFY',           desc: 'Cast on a creature, object or feature of land or architecture. Gain all available information on that specific place or thing' },
+  { id: 'illusory_self',     name: 'ILLUSORY SELF',      desc: 'Conjure a very realistic mirror-clone of yourself, lasts 1D4 ROUNDS. The clone has no solid mass, and vanishes if touched' },
+  { id: 'levitation',        name: 'LEVITATION',         desc: 'Enchant a target with touch to float up to 6 feet high for 1D4 ROUNDS. If casting on yourself, the effect lasts 1D6 ROUNDS' },
+  { id: 'lightning_bolt',    name: 'LIGHTNING BOLT',     desc: 'Unleash a crackling bolt with no roll. All targets within a straight line roll DEFENSE to avoid. Metal clad foes take double damage' },
+  { id: 'mage_eye',          name: 'MAGE EYE',           desc: 'Conjure a hovering orb that resembles a gigantic eye of energy. Move it anywhere within one mile, see what it sees' },
+  { id: 'mender',            name: 'MENDER',             desc: 'Repair an item, architectural feature, vehicle or weapon instantly. Can be used even when target is mostly destroyed' },
+  { id: 'mind_trap',         name: 'MIND TRAP',          desc: 'Cripple a target you can see with endless, looping thoughts. They are stunned for 1D4 ROUNDS, or until they make an INT roll' },
+  { id: 'shrink_ray',        name: 'SHRINK RAY',         desc: 'Reduce one target to 1/10th its size for 1 ROUND. Its STATS are reduced to -3 on all rolls, but retains its HP' },
+  { id: 'song_mountain',     name: 'SONG OF THE MOUNTAIN',desc: 'Sing! All enemies within FAR range are enamored with you for 1D4 ROUNDS, willing to hear you out. Enemies with more than 3 HEARTS can never be so swayed' },
+  { id: 'the_hidden',        name: 'THE HIDDEN',         desc: 'Allies NEAR you are invisible for 1D4 ROUNDS, they become visible again if leaving NEAR range of you. Ends if you are harmed or cast' },
+  { id: 'translocate',       name: 'TRANSLOCATE',        desc: 'Roll INT. A target you can see also rolls INT. If you beat their roll, instantly swap places with them in a puff of smoke' },
+  { id: 'vampiric_ray',      name: 'VAMPIRIC RAY',       desc: 'Extract life force from a living target within CLOSE range. Transfer EFFORT rolled from their HP to yours' },
+];
+
+const WIS_SPELLS = [
+  { id: 'elemental_air',     name: 'ELEMENTAL AIR',      desc: 'Move a mass of air in powerful blasts of wind. Foes or objects hit must roll STR above your WIS roll total to resist being pushed FAR' },
+  { id: 'elemental_earth',   name: 'ELEMENTAL EARTH',    desc: 'Draw forth a mass of stone and soil. The mass shoots from the ground, forming a wall 5 feet thick, curved around you at NEAR range' },
+  { id: 'elemental_fire',    name: 'ELEMENTAL FIRE',     desc: 'Empower any open flame you see into a huge fire quickly burning out of control. It behaves naturally, but with terrible accelerant' },
+  { id: 'elemental_ice',     name: 'ELEMENTAL ICE',      desc: 'Freeze water into solid ice. Freeze up to 10,000 gallons for each point rolled over the current TARGET. The ice melts naturally after frozen' },
+  { id: 'elemental_beast',   name: 'ELEMENTAL BEAST',    desc: 'On an element you have magically affected, change it into a semi-sentient creature at your command. 1 HEART, MAGIC' },
+  { id: 'elemental_storm',   name: 'ELEMENTAL STORM',    desc: 'When outdoors, call forth a raging storm of hail, lightning and fog. It rages on for 1D8 ROUNDS, with many possible effects' },
+  { id: 'elemental_vortex',  name: 'ELEMENTAL VORTEX',   desc: 'Stir the fabric of matter, drawing raw power inward. For each ROUND casting, store a D12 for any subsequent elemental SPELL outcome' },
+  { id: 'elemental_water',   name: 'ELEMENTAL WATER',    desc: 'Conjure a giant mass of water at a location you can see. Materialize 10,000 gallons for each point rolled over the current TARGET' },
+  { id: 'radiant_shield',    name: 'RADIANT SHIELD',     desc: 'Call on divine forces to imbue your shield with holy light. The light will blind all evil creatures that see it for 1D4 ROUNDS' },
+  { id: 'healing_nova',      name: 'HEALING NOVA',       desc: 'With a HARD WIS roll, emit a burst of divine healing energy. This wave heals your allies within FAR range' },
+  { id: 'healing_touch',     name: 'HEALING TOUCH',      desc: 'Touch an ally, heal them with holy magic. Make this roll HARD to use both hands, healing two allies at once' },
+  { id: 'holy_bulwark',      name: 'HOLY BULWARK',       desc: 'Conjure a luminous shield of energy on an ally you can see. The shield absorbs the next HEART of incoming damage' },
+  { id: 'invulnerability',   name: 'INVULNERABILITY',    desc: 'Touch an ally or object. It is immune to all forms of harm for the next ROUND. Make this roll HARD to earn 2 ROUNDS of the effect' },
+  { id: 'cleanse',           name: 'CLEANSE',            desc: 'With a touch and a prayer, cure all negative effects, curses, poisons or disease from a creature. Can be cast using WIS or CHA' },
+  { id: 'lion_heart',        name: 'LION HEART',         desc: 'With a bold voice, proclaim the righteous destiny of you and your allies. Those who hear you are immune to fear for 4 ROUNDS' },
+  { id: 'regeneration',      name: 'REGENERATION',       desc: 'A tiny spark of pure sunlight forms in your hand. Give this tiny spark to an ally. They will automatically heal D8 HP on their next 4 TURNS' },
+  { id: 'resurrection',      name: 'RESURRECTION',       desc: 'Focus all your soul on restoring life to a dead ally. This SPELL cannot be cast in combat, or anywhere that is unsafe in any way' },
+  { id: 'yogi_stasis',       name: 'YOGI STASIS',        desc: 'Assume a cross-legged posture, and enter meditation. In this state you are immune to harm and require no food or air. No duration limit' },
+  { id: 'far_seer',          name: 'FAR SEER',           desc: 'Use awareness to access the senses of any person you have met before. Experience all they do for 1 ROUND' },
+  { id: 'quickness',         name: 'QUICKNESS',          desc: 'Focus your mind to hasten your feet. Once cast, move anywhere within the current location, as if NEAR, on your TURN for 1D4 ROUNDS' },
+  { id: 'astral_connection', name: 'ASTRAL CONNECTION',  desc: 'Touch an ally to bind your souls. If that ally is harmed while so connected, the two of you split the damage in any amounts desired' },
+  { id: 'atom_palm',         name: 'ATOM PALM',          desc: 'Lift yourself from the ground with will. When you descend, your hand creates a seismic burst. Do ULTIMATE to all NEAR targets' },
+  { id: 'astral_self',       name: 'ASTRAL SELF',        desc: 'Separate from your physical body. As long as the physical body is safe, you can function in astral form, except acquiring LOOT or being healed' },
+  { id: 'wild_growth',       name: 'WILD GROWTH',        desc: 'Call upon the dormant force of all plant life within FAR range. It suddenly grows to a massive, tangled thicket of wood and vine' },
+  { id: 'vine_whip',         name: 'VINE WHIP',          desc: 'Use this thorned tendril as a melee weapon, or grapple lashed foes or objects and pull them with a STR roll after the cast' },
+  { id: 'enchant',           name: 'ENCHANT',            desc: 'Place any SPELL you know into a weapon or usable item. Create only 1 at a time. Once used, it is dispelled' },
+  { id: 'animal_friend',     name: 'ANIMAL FRIEND',      desc: 'Use realistic calls and a supernatural empathy to call an animal from local environs. It is fiercely loyal, and communicates with you' },
+  { id: 'woodshaper',        name: 'WOODSHAPER',         desc: 'Use magic to bend wood into weapons, armor, or objects of comparable mass. Create far larger things with a natural 20' },
+  { id: 'dire_form',         name: 'DIRE FORM',          desc: 'Call upon your own feral nature to transform yourself into a dire animal, assuming its form and STATS for 1D4 ROUNDS' },
+  { id: 'forager',           name: 'FORAGER',            desc: 'Roll WIS outdoors to find specific fungus or plants for creating specific potions, poisons or other tinctures. Food can also be found' },
+  { id: 'gathering_stone',   name: 'GATHERING STONE',    desc: 'Place a medium sized stone, mark it with a primeval rune. Those who witness this SPELL cast firsthand can, at any time in the future, call the name of the rune and return instantly. Only 1 active at a time' },
+];
+
+const CHA_SPELLS = [
+  { id: 'absorb',         name: 'ABSORB',          desc: 'Pull nearby magical energies to you. For 1 ROUND, all SPELLS and MAGIC effects are directed at you instead of their intended targets' },
+  { id: 'aid',            name: 'AID',              desc: 'Support an ally by channelling your energy to them. Add your MAGIC EFFORT to an ally\'s EFFORT roll after a successful attempt within the next ROUND' },
+  { id: 'banish',         name: 'BANISH',           desc: 'Demand a target to leave your presence. On a 1 HEART target, make a contested CHA roll. On a success, they will leave and will not return for D4 ROUNDS' },
+  { id: 'bind_in_place',  name: 'BIND IN PLACE',    desc: 'Command an object to remain stationary, regardless of outside forces. The object can be destroyed, but otherwise will not move until released' },
+  { id: 'courage',        name: 'COURAGE',          desc: 'Bolster a CLOSE ally with courage and bravery. For the next 1D4 ROUNDS, all of their actions are EASY' },
+  { id: 'cross_fingers',  name: 'CROSS FINGERS',    desc: 'Allow the forces that be take control and hope for the best. For D4 ROUNDS, reroll the TARGET each ROUND and subtract your MAGIC bonus' },
+  { id: 'darkness',       name: 'DARKNESS',         desc: 'Breathe darkness and mist into a space up to FAR. For D4 ROUNDS, nothing can be targeted but may still be affected by area effects' },
+  { id: 'ego',            name: 'EGO',              desc: 'Inflate a target\'s ego and increase their CHA bonus by D4, but reduce their WIS by the same amount' },
+  { id: 'good_timing',    name: 'GOOD TIMING',      desc: 'Cast on an ally and if they roll a critical success within 3 ROUNDS, QUADRUPLE, TRIPLE, or DOUBLE the effect depending on when it was rolled' },
+  { id: 'hex_surge',      name: 'HEX SURGE',        desc: 'Unleash a crackling arc of eldritch energy. Deal continuous MAGIC damage against a target as long as concentration is maintained' },
+  { id: 'link',           name: 'LINK',             desc: 'Connect yourself to a target and prevent them from moving away. They cannot move more than a FAR distance from you and you from them' },
+  { id: 'raise_dead',     name: 'RAISE DEAD',       desc: 'Reanimate a recently deceased corpse as a 1HP Skeleton with a touch. If failing to cast, the target\'s body is destroyed permanently' },
+  { id: 'resistance',     name: 'RESISTANCE',       desc: 'Form a shield of energy around yourself or an ally. All MAGIC damage against you is reduced by half for 4 ROUNDS' },
+  { id: 'revitalize',     name: 'REVITALIZE',       desc: 'Recover your strength with a magically enhanced nap. Grant an ally automatic RECOVERY for up to 4 ROUNDS if they do not MOVE or ACT' },
+  { id: 'scream',         name: 'SCREAM',           desc: 'Unleash a primal scream that disrupts and disorients everyone within range. All targets within FAR roll CON or are stunned for 1 ROUND' },
+  { id: 'searing_gaze',   name: 'SEARING GAZE',     desc: 'Cut a target with a look. Peer into the eyes of a CLOSE target and deal MAGIC effort. On a critical success, the target is stunned for D4 ROUNDS' },
+  { id: 'shadow_blade',   name: 'SHADOW BLADE',     desc: 'Form a blade from the shadows themselves. The blade deals MAGIC damage and disappears in D4 ROUNDS' },
+  { id: 'silence',        name: 'SILENCE',          desc: 'Prevent a target or object you can see from making any noise for D4 ROUNDS. Anything the target interacts with may still be heard' },
+  { id: 'sleep',          name: 'SLEEP',            desc: 'Force a target you can touch into a deep slumber as you press their consciousness into submission. Roll CHA each ROUND to maintain the effect' },
+  { id: 'snare',          name: 'SNARE',            desc: 'Place a magical trap and await an unsuspecting victim. Anyone who crosses through the SNARE is trapped in place until they succeed in a CHA roll' },
+  { id: 'star_light',     name: 'STAR LIGHT',       desc: 'From your finger tips, fill a space with flickering lights as soft as the moon. Reduce the TARGET by one under the calming glow' },
+  { id: 'sunder',         name: 'SUNDER',           desc: 'With sheer determination, bless an ally with DOUBLE ULTIMATE damage on their next attack. If the attack fails, the weapon used is destroyed' },
+  { id: 'thunder',        name: 'THUNDER',          desc: 'With the voice of Udin and the crack of lightning, all NEAR targets take BASIC damage from your boisterous shout' },
+  { id: 'trade',          name: 'TRADE',            desc: 'Exchange your knowledge and abilities with an ally. Swap one of your STATS, EFFORT, or ABILITIES with another player. Cast again to swap back' },
+  { id: 'transmutation',  name: 'TRANSMUTATION',    desc: 'Change the form of a small object that can fit within your hand into a similar sized object for D4 ROUNDS' },
+  { id: 'truth',          name: 'TRUTH',            desc: 'Enhance your powers of persuasion. With a successful contested CHA roll, force a target to speak only the truth' },
+  { id: 'unnatural_life', name: 'UNNATURAL LIFE',   desc: 'Grant D10 temporary hit points to an ally, even surpassing their max HP. Once they are spent, reduce their max HP to 5 for the session' },
+  { id: 'wall_walking',   name: 'WALL WALKING',     desc: 'Unbind yourself from gravity\'s pull. Move along any surface as normal, including ceilings for D4 ROUNDS' },
+  { id: 'ward_circle',    name: 'WARD CIRCLE',      desc: 'Create a circular barrier around you at a NEAR range. Nothing can enter the circle, but the ward is broken if anything leaves or casts a spell inside' },
+  { id: 'weaken',         name: 'WEAKEN',           desc: 'Drain the strength and power of a target with a blast of black magic. Its STATS and EFFORT bonuses are reduced by one' },
+];
+
+// Which type loot items grant spells, what kind, and how many
+const SPELL_GRANTS = {
+  grimoire:   { list: 'INT', count: 3 },
+  ring:       { list: 'INT', count: 3 },
+  greenstaff: { list: 'WIS', count: 3 },
+  booktruth:  { list: 'WIS', count: 5 },
+  amberbeads: { list: 'WIS', count: 1 },
+  libram:             { list: 'CHA', count: 2 },
+  crystalball:        { list: 'CHA', count: 1 },
+  stafftransmutation: { list: 'CHA', count: 2 },
+  ritualblade:        { list: 'CHA', count: 1 },
+  gnarledbroom:       { list: 'CHA', count: 2 },
+};
+
+const LOOT_POOL = [
+  { name: "ADVENTURER'S PACK",    desc: "A torch, bedroll, scrap of jerky, apple, pipe, and rope. This rucksack has been through so much, you're not sure what's inside." },
+  { name: "MINER'S PACK",         desc: "Pick hammer, lantern, fire-starting oil and flint, compass, breather mask. A heavy duty canvas pack scuffed with coal and chalk." },
+  { name: "POLAR PACK",           desc: "This fur-lined pack is built into a warm seal skin cloak. It contains a fire pot, fur mittens, snowblind goggles, ski poles, boots and rope." },
+  { name: "FISHERMAN'S SATCHEL",  desc: "Mesh creel, two fishing poles, tackle box, fillet knife and basket snare. Also includes swim fins and a clumsy glass diving mask." },
+  { name: "MENDER'S TOOLBOX",     desc: "Hammer and pliers, rivets, scrap steel, leather strips, spare buckles and iron nails. Use for anything from armor to boat repair." },
+  { name: "HEALER'S CASE",        desc: "Using this kit of bandages, tinctures and serums, heal 1 HP on an ally with an INT or WIS roll. Includes bottles, scalpel, and anti-venom." },
+  { name: "CLIMBING GEAR",        desc: "Grapple hooks, extreme rope, steel belt clips, 2 pairs of boot crampons, iron spikes and hammer. Worn over one shoulder." },
+  { name: "MIXED ARMOR GARB",     desc: "Common garb for adventurers, a mix of padded gambeson, leather belts, and armor odds & ends. +2 DEFENSE" },
+  { name: "HEAVY PLATE and CHAIN ARMOR", desc: "A cumbersome set of steel plates, chainmail, and steel boots for heavy combat. +4 DEFENSE, DEX rolls always HARD" },
+  { name: "COMMON SHIELD",        desc: "A round wooden shield and strap suited for travel on foot. +2 DEFENSE. If hit, sacrifice the shield to absorb all of any 1 attack." },
+  { name: "IRON SHIELD",          desc: "This heavy shield is steel with iron bands. +3 DEFENSE. While using this shield, you cannot use one hand, occupies 2 inventory spaces." },
+  { name: "TRAVELER'S GARB",      desc: "A lighter, more comfortable set of clothes for travelers. Only +1 DEFENSE, but includes 2 extra spaces for inventory." },
+  { name: "SWORD AND SCABBARD",   desc: "A trusty blade of whatever size or make suits your training, leather sheath, belts, and sharpening kit if the blade is damaged." },
+  { name: "BATTLE AXE AND HARNESS", desc: "A huge chopping weapon of one or two blades. Damage timbers or structures, but impossible to conceal." },
+  { name: "SPEARMAN'S KIT",       desc: "A ten foot oak shaft with swappable blade tip that can be switched to hook, spearhead, or glaive. Can attack targets up to NEAR range." },
+  { name: "BOW AND QUIVER",       desc: "A recurve bow, either short for small spaces or long for outdoor use. Quiver empty on attack rolls of natural 1. Carry a spare quiver if possible!" },
+  { name: "CROSSBOW AND BOLT KIT", desc: "A powerful mechanical weapon. Critical hits on natural 19 or 20. The bolt kit allows for incendiary, smoke, or flare tips." },
+  { name: "WARHAMMER",            desc: "A hefty, blocky weapon for smashing. Hits of 5-10 damage destroy 1 point of enemy DEFENSE, 10+ also stuns the target for 1 ROUND." },
+  { name: "GREAT SWORD",          desc: "A tremendous two-handed blade 5 feet long. This weapon occupies 3 inventory spaces, but always inflicts ULTIMATE damage." },
+  { name: "KNIFE BELT",           desc: "A sling of sorts which holds up to 8 daggers and throwing knives in concealed scabbards. One scabbard includes a poison-protective sheath." },
+  { name: "KNIGHT'S WEAPON KIT",  desc: "A heavy black belt with a spiked mace and chain flail on steel rings. Used against shields, degrades DEFENSE by 1 on each hit." },
+  { name: "QUARTER STAFF and WRAPS", desc: "A wooden walking staff fire tempered for hardness, 4 feet in length. Includes fist-wraps for unarmed fighters." },
+  { name: "EXOTIC WEAPONRY",      desc: "Strange or unusual weapons from far away lands include chain whips, nunchaku, segment staff, and sword-of-rings. Work with your GM!" },
+  { name: "MAPS",                 desc: "A humble wooden tube filled with regional maps and specific location plan views. Roll INT to check for a useful map once per location." },
+];
+
+const STATS = ['STRENGTH', 'DEXTERITY', 'CONSTITUTION', 'INTELLIGENCE', 'WISDOM', 'CHARISMA'];
+const EFFORTS = ['BASIC', 'WEAPON', 'MAGIC', 'ULTIMATE'];
+const ALL_STAT_EFFORT = [...STATS, ...EFFORTS];
+
+const STAT_DESCS = {
+  STRENGTH:     'Lifting, breaking, climbing, and melee power. Used for physical force.',
+  DEXTERITY:    'Speed, agility, stealth, and ranged attacks. Used for precise movement.',
+  CONSTITUTION: 'Toughness and endurance. Adds directly to your DEFENSE score.',
+  INTELLIGENCE: 'Knowledge, memory, and arcane study. Used to cast INT spells.',
+  WISDOM:       'Perception, intuition, and nature magic. Used to cast WIS spells.',
+  CHARISMA:     'Force of personality, persuasion, and force of will. Used to cast CHA spells.',
+};
+
+const EFFORT_DESCS = {
+  BASIC:    'Damage from bare hands and raw wits. D4.',
+  WEAPON:   'Damage from swords, axes, bows, and standard weapons. D6.',
+  MAGIC:    'Damage and power from spells and magical effects. D8.',
+  ULTIMATE: 'Maximum effort — rare, powerful attacks and abilities. D12.',
+};
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+
+const state = {
+  lifeform: null,
+  bonusStats: [],
+  bonusRolled: false,
+  type: null,
+  typeAbility: null,
+  typeLoot: null,
+  spells: new Set(),       // selected spell IDs from list
+  customSpells: '',        // write-in spells
+  loot: new Set(),
+  charName: '',
+  story: '',
+  statPts: { STRENGTH:0, DEXTERITY:0, CONSTITUTION:0, INTELLIGENCE:0, WISDOM:0, CHARISMA:0 },
+  statRemain: 6,
+  effortPts: { BASIC:0, WEAPON:0, MAGIC:0, ULTIMATE:0 },
+  effortRemain: 4,
+};
+
+const MAX_LOOT = 4;
+const MAX_STAT = 6;
+const MAX_EFFORT = 4;
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+
+window.onload = () => {
+  renderLifeforms();
+  renderTypes();
+  renderLoot();
+  renderStats();
+  renderEffort();
+  updateIncompleteList();
+};
+
+// ─────────────────────────────────────────────
+//  LIFEFORM
+// ─────────────────────────────────────────────
+
+function renderLifeforms() {
+  const el = document.getElementById('lifeform-cards');
+  el.innerHTML = LIFEFORMS.map(lf => `
+    <div class="choice-card ${state.lifeform === lf.id ? 'selected' : ''}" data-action="lifeform" data-id="${lf.id}" tabindex="0" role="radio" aria-checked="${state.lifeform === lf.id}">
+      <div class="card-name">${lf.name}</div>
+    </div>
+  `).join('');
+}
+
+function selectLifeform(id) {
+  state.lifeform = id;
+  renderLifeforms();
+  unlockSection(3);
+  updateProgress();
+  markCompleted(2);
+}
+
+// ─────────────────────────────────────────────
+//  ROLL BONUS STATS
+// ─────────────────────────────────────────────
+
+function rollBonusStats() {
+  const pool = [...ALL_STAT_EFFORT];
+  const picks = [];
+  while (picks.length < 2) {
+    const idx = Math.floor(Math.random() * pool.length);
+    picks.push(pool.splice(idx, 1)[0]);
+  }
+  state.bonusStats = picks;
+  state.bonusRolled = true;
+
+  const el = document.getElementById('roll-results');
+  el.innerHTML = picks.map(s => `
+    <div class="rolled-stat fresh">
+      <div class="stat-label">${s}</div>
+      <div class="stat-val">+1</div>
+    </div>
+  `).join('');
+
+  // Remove fresh class after animation
+  setTimeout(() => {
+    el.querySelectorAll('.rolled-stat').forEach(e => e.classList.remove('fresh'));
+  }, 600);
+
+  document.getElementById('roll-btn').style.display = 'none';
+  renderStats();
+  renderEffort();
+  unlockSection(5);
+  updateProgress();
+  markCompleted(4);
+}
+
+// ─────────────────────────────────────────────
+//  TYPE
+// ─────────────────────────────────────────────
+
+function renderTypes() {
+  const el = document.getElementById('type-cards');
+  el.innerHTML = TYPES.map(t => `
+    <div class="type-card ${state.type === t.id ? 'selected' : ''}" data-action="type" data-id="${t.id}" tabindex="0" role="radio" aria-checked="${state.type === t.id}">
+      <div class="type-name">${t.name}</div>
+      <div class="type-ability">${t.desc}</div>
+    </div>
+  `).join('');
+}
+
+function selectType(id) {
+  if (state.type !== id && (state.typeAbility || state.typeLoot)) {
+    if (!confirm('Changing your Type will clear your Ability and Starting Loot choices. Continue?')) return;
+  }
+  if (state.type !== id) {
+    state.typeAbility = null;
+    state.typeLoot = null;
+    state.spells = new Set();
+    state.customSpells = '';
+    // Reset spell trigger UI
+    const triggerSection = document.getElementById('spell-trigger-section');
+    if (triggerSection) triggerSection.style.display = 'none';
+    const customField = document.getElementById('custom-spells-field');
+    if (customField) customField.value = '';
+    // Revert Step 3 to active (incomplete) when type changes
+    const sec3 = document.getElementById('sec-3');
+    if (sec3) {
+      sec3.classList.remove('completed');
+      sec3.classList.add('active');
+    }
+  }
+  state.type = id;
+  renderTypes();
+
+  const tp = TYPES.find(t => t.id === id);
+  const sub = document.getElementById('type-sub');
+  sub.style.display = 'block';
+
+  document.getElementById('ability-cards').innerHTML = tp.abilities.map(a => `
+    <div class="sub-card ${state.typeAbility === a.id ? 'selected' : ''}" data-action="ability" data-id="${a.id}" tabindex="0" role="radio">
+      <div class="sub-name">${a.name}</div>
+      <div class="sub-text">${a.text}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('loot-type-cards').innerHTML = tp.lootOptions.map(l => `
+    <div class="sub-card ${state.typeLoot === l.id ? 'selected' : ''}" data-action="typeloot" data-id="${l.id}" tabindex="0" role="radio">
+      <div class="sub-name">${l.name}</div>
+      <div class="sub-text">${l.text}</div>
+    </div>
+  `).join('');
+
+  checkTypeComplete();
+}
+
+function selectTypeAbility(id) {
+  state.typeAbility = id;
+  const tp = TYPES.find(t => t.id === state.type);
+  document.getElementById('ability-cards').innerHTML = tp.abilities.map(a => `
+    <div class="sub-card ${state.typeAbility === a.id ? 'selected' : ''}" data-action="ability" data-id="${a.id}" tabindex="0" role="radio">
+      <div class="sub-name">${a.name}</div>
+      <div class="sub-text">${a.text}</div>
+    </div>
+  `).join('');
+  checkTypeComplete();
+}
+
+function selectTypeLoot(id) {
+  state.typeLoot = id;
+  state.spells = new Set();
+  state.customSpells = '';
+  const customField = document.getElementById('custom-spells-field');
+  if (customField) customField.value = '';
+
+  const tp = TYPES.find(t => t.id === state.type);
+  document.getElementById('loot-type-cards').innerHTML = tp.lootOptions.map(l => `
+    <div class="sub-card ${state.typeLoot === l.id ? 'selected' : ''}" data-action="typeloot" data-id="${l.id}" tabindex="0" role="radio">
+      <div class="sub-name">${l.name}</div>
+      <div class="sub-text">${l.text}</div>
+    </div>
+  `).join('');
+
+  const grant = SPELL_GRANTS[id];
+  const triggerSection = document.getElementById('spell-trigger-section');
+  if (grant) {
+    triggerSection.style.display = 'block';
+    const btn = document.getElementById('spell-trigger-btn');
+    const status = document.getElementById('spell-trigger-status');
+    btn.textContent = `Choose ${grant.count} ${grant.list} Spell${grant.count > 1 ? 's' : ''} →`;
+    btn.classList.remove('complete');
+    status.textContent = '';
+    status.classList.remove('done');
+  } else {
+    triggerSection.style.display = 'none';
+  }
+
+  checkTypeComplete();
+}
+
+function openSpellPicker() {
+  const grant = SPELL_GRANTS[state.typeLoot];
+  if (!grant) return;
+  const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
+  document.getElementById('spell-modal-title').textContent =
+    `Choose ${grant.count} ${grant.list} Spell${grant.count > 1 ? 's' : ''}`;
+  document.getElementById('spell-modal-stamp').textContent =
+    `${grant.list} SPELLS · SELECT ${grant.count}`;
+  renderSpellPicker(spellList, grant.count);
+  document.getElementById('spell-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSpellPicker() {
+  document.getElementById('spell-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  // Update trigger button status
+  const grant = SPELL_GRANTS[state.typeLoot];
+  if (grant) {
+    const customCount = state.customSpells
+      ? state.customSpells.split(',').map(s => s.trim()).filter(Boolean).length : 0;
+    const total = state.spells.size + customCount;
+    const btn = document.getElementById('spell-trigger-btn');
+    const status = document.getElementById('spell-trigger-status');
+    if (total >= grant.count) {
+      btn.textContent = `✓ ${total} Spell${total > 1 ? 's' : ''} Chosen — Edit`;
+      btn.classList.add('complete');
+      status.textContent = [...state.spells].map(id => {
+        const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
+        return spellList.find(s => s.id === id)?.name;
+      }).filter(Boolean).join(', ');
+      status.classList.add('done');
+    } else {
+      btn.textContent = `Choose ${grant.count} ${grant.list} Spell${grant.count > 1 ? 's' : ''} → (${total}/${grant.count})`;
+      btn.classList.remove('complete');
+      status.textContent = '';
+    }
+  }
+  checkTypeComplete();
+}
+
+function renderSpellPicker(spellList, max) {
+  const counter = document.getElementById('spell-counter');
+  const remaining = max - state.spells.size;
+  counter.innerHTML = `<span>Spells Remaining:</span><span class="pts-num">${remaining}</span>`;
+
+  document.getElementById('spell-grid').innerHTML = spellList.map(sp => {
+    const sel = state.spells.has(sp.id);
+    const full = state.spells.size >= max && !sel;
+    return `
+      <div class="spell-card ${sel ? 'selected' : ''} ${full ? 'disabled' : ''}" data-action="spell" data-id="${sp.id}" tabindex="0" role="checkbox">
+        <div class="spell-check">${sel ? '✓' : ''}</div>
+        <div class="spell-card-text">
+          <div class="spell-card-name">${sp.name}</div>
+          <div class="spell-card-desc">${sp.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+//  DELEGATED EVENT LISTENER
+//  All card clicks use data-action / data-id
+//  so apostrophes in content never break HTML
+// ─────────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('[data-action]');
+  if (!card) return;
+  const action = card.dataset.action;
+  const id = card.dataset.id;
+  if (action === 'lifeform') selectLifeform(id);
+  else if (action === 'type')     selectType(id);
+  else if (action === 'ability')  selectTypeAbility(id);
+  else if (action === 'typeloot') selectTypeLoot(id);
+  else if (action === 'spell')    toggleSpell(id);
+  else if (action === 'loot')     toggleLoot(parseInt(id));
+});
+
+function toggleSpell(id) {
+  const grant = SPELL_GRANTS[state.typeLoot];
+  if (!grant) return;
+  const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
+  if (state.spells.has(id)) {
+    state.spells.delete(id);
+  } else if (state.spells.size < grant.count) {
+    state.spells.add(id);
+  }
+  renderSpellPicker(spellList, grant.count);
+  checkTypeComplete();
+}
+
+function onCustomSpellsInput() {
+  state.customSpells = document.getElementById('custom-spells-field').value.trim();
+  checkTypeComplete();
+}
+
+function checkTypeComplete() {
+  if (!state.type || !state.typeAbility || !state.typeLoot) {
+    lockSection(4);
+    return;
+  }
+  const grant = SPELL_GRANTS[state.typeLoot];
+  if (grant && state.spells.size < grant.count && state.customSpells.length === 0) {
+    // Allow through if they've picked at least some from list OR written custom ones,
+    // but require the full count to be met across both sources.
+    // Count custom spells as comma-separated entries.
+    const customCount = state.customSpells
+      ? state.customSpells.split(',').map(s => s.trim()).filter(Boolean).length
+      : 0;
+    const total = state.spells.size + customCount;
+    if (total < grant.count) {
+      lockSection(4);
+      return;
+    }
+  }
+  unlockSection(4);
+  updateProgress();
+  markCompleted(3);
+  // Scroll to top of this section so user sees the summary, not the spell list
+  const sec3 = document.getElementById('sec-3');
+  if (sec3) setTimeout(() => sec3.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+// ─────────────────────────────────────────────
+//  LOOT
+// ─────────────────────────────────────────────
+
+function renderLoot() {
+  const el = document.getElementById('loot-grid');
+  el.innerHTML = LOOT_POOL.map((item, i) => {
+    const sel = state.loot.has(i);
+    const full = state.loot.size >= MAX_LOOT && !sel;
+    return `
+      <div class="loot-item ${sel ? 'selected' : ''} ${full ? 'disabled' : ''}" data-action="loot" data-id="${i}" tabindex="0" role="checkbox">
+        <div class="loot-check">${sel ? '✓' : ''}</div>
+        <div class="loot-item-text">
+          <div class="loot-item-name">${item.name}</div>
+          <div class="loot-item-desc">${item.desc}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('loot-pts').textContent = MAX_LOOT - state.loot.size;
+}
+
+function toggleLoot(i) {
+  if (state.loot.has(i)) {
+    state.loot.delete(i);
+  } else if (state.loot.size < MAX_LOOT) {
+    state.loot.add(i);
+  }
+  renderLoot();
+  if (state.loot.size === MAX_LOOT) {
+    markCompleted(7);
+    updateProgress();
+    hide('loot-warn');
+  } else {
+    // Loot removed — revert step 7 back to active (incomplete)
+    const sec7 = document.getElementById('sec-7');
+    if (sec7) {
+      sec7.classList.remove('completed');
+      sec7.classList.add('active');
+    }
+    updateIncompleteList();
+  }
+}
+
+// ─────────────────────────────────────────────
+//  STORY
+// ─────────────────────────────────────────────
+
+function skipStory() {
+  const sec = document.getElementById('sec-1');
+  sec.classList.add('skipped');
+  sec.classList.remove('active');
+  // Unlock step 2 without marking step 1 complete
+  unlockSection(2);
+  updateProgress();
+}
+
+function onStoryInput() {
+  state.charName = document.getElementById('name-field').value.trim();
+  const val = document.getElementById('story-field').value.trim();
+  state.story = val;
+  document.getElementById('char-count').textContent = document.getElementById('story-field').value.length;
+  // Update persistent name in header
+  const nameDisplay = document.getElementById('header-name');
+  if (nameDisplay) nameDisplay.textContent = state.charName ? '— ' + state.charName + ' —' : '';
+  if (state.charName.length >= 1 && val.length >= 10) {
+    // Clear skipped state if they come back and complete it
+    const sec = document.getElementById('sec-1');
+    sec.classList.remove('skipped');
+    unlockSection(2);
+    markCompleted(1);
+    updateProgress();
+    hide('story-warn');
+  } else {
+    // Only lock step 2 if the user hasn't already skipped past step 1
+    const sec1 = document.getElementById('sec-1');
+    if (!sec1.classList.contains('skipped')) {
+      lockSection(2);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+//  STATS
+// ─────────────────────────────────────────────
+
+function renderStats() {
+  const el = document.getElementById('stat-grid');
+  el.innerHTML = STATS.map(s => {
+    const bonus = state.bonusStats.includes(s) ? 1 : 0;
+    const total = state.statPts[s] + bonus;
+    const atFloor = state.statPts[s] <= 0;
+    return `
+      <div class="stat-row ${bonus ? 'has-bonus' : ''}">
+        <div class="stat-tooltip">${STAT_DESCS[s]}</div>
+        <div class="stat-name">${s.slice(0,3)}</div>
+        <div class="stepper">
+          <button onclick="changeStat('stat','${s}',-1)" ${atFloor?'disabled':''}>−</button>
+          <span class="val">${total}</span>
+          <button onclick="changeStat('stat','${s}',1)" ${state.statRemain<=0?'disabled':''}>+</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('stat-pts').textContent = state.statRemain;
+}
+
+function renderEffort() {
+  const el = document.getElementById('effort-grid');
+  el.innerHTML = EFFORTS.map(s => {
+    const bonus = state.bonusStats.includes(s) ? 1 : 0;
+    const total = state.effortPts[s] + bonus;
+    const atFloor = state.effortPts[s] <= 0;
+    return `
+      <div class="stat-row ${bonus ? 'has-bonus' : ''}">
+        <div class="stat-tooltip">${EFFORT_DESCS[s]}</div>
+        <div class="stat-name">${s}</div>
+        <div class="stepper">
+          <button onclick="changeStat('effort','${s}',-1)" ${atFloor?'disabled':''}>−</button>
+          <span class="val">${total}</span>
+          <button onclick="changeStat('effort','${s}',1)" ${state.effortRemain<=0?'disabled':''}>+</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('effort-pts').textContent = state.effortRemain;
+}
+
+function changeStat(pool, stat, dir) {
+  if (pool === 'stat') {
+    const newVal = state.statPts[stat] + dir;
+    if (newVal < 0) return;
+    if (dir > 0 && state.statRemain <= 0) return;
+    state.statPts[stat] = newVal;
+    state.statRemain -= dir;
+    renderStats();
+    if (state.statRemain === 0) {
+      unlockSection(6);
+      markCompleted(5);
+      updateProgress();
+    } else {
+      // Points removed — mark step 5 as back to active (incomplete)
+      const sec5 = document.getElementById('sec-5');
+      if (sec5) {
+        sec5.classList.remove('completed');
+        sec5.classList.add('active');
+      }
+    }
+  } else {
+    const newVal = state.effortPts[stat] + dir;
+    if (newVal < 0) return;
+    if (dir > 0 && state.effortRemain <= 0) return;
+    state.effortPts[stat] = newVal;
+    state.effortRemain -= dir;
+    renderEffort();
+    if (state.effortRemain === 0) {
+      unlockSection(7);
+      markCompleted(6);
+      updateProgress();
+    } else {
+      // Points removed — mark step 6 as back to active (incomplete)
+      const sec6 = document.getElementById('sec-6');
+      if (sec6) {
+        sec6.classList.remove('completed');
+        sec6.classList.add('active');
+      }
+    }
+  }
+  updateIncompleteList();
+}
+
+// ─────────────────────────────────────────────
+//  COPY SHEET
+// ─────────────────────────────────────────────
+
+function copySheet() {
+  const lf = LIFEFORMS.find(l => l.id === state.lifeform);
+  const tp = TYPES.find(t => t.id === state.type);
+  const chosenAbility = tp.abilities.find(a => a.id === state.typeAbility);
+  const chosenTypeLoot = tp.lootOptions.find(l => l.id === state.typeLoot);
+  const chosenLoot = [...state.loot].map(i => LOOT_POOL[i].name);
+  const allLoot = [chosenTypeLoot ? chosenTypeLoot.name : '', ...chosenLoot].filter(Boolean);
+
+  const grant = SPELL_GRANTS[state.typeLoot];
+  let spellLines = '';
+  if (grant) {
+    const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
+    const pickedSpells = [...state.spells].map(id => spellList.find(s => s.id === id)).filter(Boolean);
+    const customEntries = state.customSpells ? state.customSpells.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const spellEntries = [
+      ...pickedSpells.map(sp => `  • ${sp.name}: ${sp.desc}`),
+      ...customEntries.map(s => `  • ${s}`),
+    ];
+    spellLines = `\nSTARTING SPELLS\n${spellEntries.join('\n')}`;
+  }
+
+  const STATS_LIST = ['STRENGTH','DEXTERITY','CONSTITUTION','INTELLIGENCE','WISDOM','CHARISMA'];
+  const EFFORTS_LIST = ['BASIC','WEAPON','MAGIC','ULTIMATE'];
+
+  const statLines = STATS_LIST.map(s => {
+    const val = state.statPts[s] + (state.bonusStats.includes(s) ? 1 : 0);
+    return `  ${s}: ${val}`;
+  }).join('\n');
+
+  const effortLines = EFFORTS_LIST.map(s => {
+    const val = state.effortPts[s] + (state.bonusStats.includes(s) ? 1 : 0);
+    return `  ${s}: ${val}`;
+  }).join('\n');
+
+  const con = state.statPts['CONSTITUTION'] + (state.bonusStats.includes('CONSTITUTION') ? 1 : 0);
+  const defenseFromLoot = [...state.loot].reduce((acc, i) => {
+    const item = LOOT_POOL[i];
+    const match = item.desc.match(/\+(\d+) DEFENSE/);
+    return acc + (match ? parseInt(match[1]) : 0);
+  }, 0);
+  const totalDefense = Math.min(20, 10 + con + defenseFromLoot);
+
+  const text = [
+    `════════════════════════════════`,
+    `  ${state.charName.toUpperCase()}`,
+    `  ${lf.name} ${tp.name}`,
+    `════════════════════════════════`,
+    ``,
+    `STORY`,
+    `  "${state.story}"`,
+    ``,
+    `CORE`,
+    `  HP: 10`,
+    `  DEFENSE: ${totalDefense} (10 + CON ${con}${defenseFromLoot ? ' + gear ' + defenseFromLoot : ''}${totalDefense === 20 ? ' · MAX' : ''})`,
+    ``,
+    `STARTING ABILITY & LOOT`,
+    `  ${chosenAbility.name}`,
+    `  ${chosenAbility.text}`,
+    ``,
+    `  ${chosenTypeLoot ? chosenTypeLoot.name : ''}`,
+    `  ${chosenTypeLoot ? chosenTypeLoot.text : ''}`,
+    ``,
+    `STATS`,
+    statLines,
+    ``,
+    `EFFORT`,
+    effortLines,
+    ``,
+    `BASIC LOOT`,
+    ...[...state.loot].map(i => `  • ${LOOT_POOL[i].name}: ${LOOT_POOL[i].desc}`),
+    spellLines,
+  ].join('\n');
+
+  navigator.clipboard.writeText(text).then(() => {
+    // Flash bottom copy button
+    const btn = document.getElementById('copy-btn');
+    if (btn) {
+      btn.textContent = '✦ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '⊕ Copy to Clipboard';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+    // Flash icon button in modal header
+    const icon = document.getElementById('modal-copy-icon');
+    if (icon) {
+      icon.classList.add('copied');
+      setTimeout(() => icon.classList.remove('copied'), 2000);
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+//  FINALIZE
+// ─────────────────────────────────────────────
+
+function finalizeCharacter() {
+  // Guard: name and story must be complete before finalizing
+  const name = document.getElementById('name-field').value.trim();
+  const story = document.getElementById('story-field').value.trim();
+  if (!name || story.length < 10) {
+    const sec = document.getElementById('sec-1');
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    sec.classList.add('skipped'); // keep the yellow highlight
+    document.getElementById('story-warn').classList.add('visible');
+    document.getElementById('story-warn').textContent = 'You skipped this step — add a name and story before finalizing.';
+    return;
+  }
+
+  const lf = LIFEFORMS.find(l => l.id === state.lifeform);
+  const tp = TYPES.find(t => t.id === state.type);
+  const chosenAbility = tp.abilities.find(a => a.id === state.typeAbility);
+  const chosenTypeLoot = tp.lootOptions.find(l => l.id === state.typeLoot);
+
+  document.getElementById('out-name').textContent = state.charName || '— CHARACTER SHEET —';
+  document.getElementById('out-stamp').textContent =
+    `LIFEFORM: ${lf.name} · TYPE: ${tp.name} · FINALIZED`;
+  document.getElementById('out-story').textContent = state.story;
+
+  // Core stats: HP and Defense
+  const con = state.statPts['CONSTITUTION'] + (state.bonusStats.includes('CONSTITUTION') ? 1 : 0);
+  const defenseFromLoot = [...state.loot].reduce((acc, i) => {
+    const item = LOOT_POOL[i];
+    const match = item.desc.match(/\+(\d+) DEFENSE/);
+    return acc + (match ? parseInt(match[1]) : 0);
+  }, 0);
+  const totalDefense = Math.min(20, 10 + con + defenseFromLoot);
+
+  document.getElementById('out-core').innerHTML = `
+    <div class="sheet-stat-box">
+      <div class="ss-name">HP</div>
+      <div class="ss-val">10</div>
+    </div>
+    <div class="sheet-stat-box">
+      <div class="ss-name">DEFENSE</div>
+      <div class="ss-val">${totalDefense}</div>
+      <div class="ss-bonus">10 + CON(${con})${defenseFromLoot ? ' + gear(' + defenseFromLoot + ')' : ''}${totalDefense === 20 ? ' · MAX' : ''}</div>
+    </div>
+  `;
+
+  // Merged ability + starting loot block
+  const abilityLootEl = document.getElementById('out-ability-loot');
+  abilityLootEl.innerHTML = `
+    <div class="sheet-item-card">
+      <div class="sheet-item-name">${chosenAbility ? chosenAbility.name : ''}</div>
+      <div class="sheet-item-desc">${chosenAbility ? chosenAbility.text : ''}</div>
+    </div>
+    <div class="sheet-item-card">
+      <div class="sheet-item-name">${chosenTypeLoot ? chosenTypeLoot.name : ''}</div>
+      <div class="sheet-item-desc">${chosenTypeLoot ? chosenTypeLoot.text : ''}</div>
+    </div>
+  `;
+
+  // Stats
+  const statEl = document.getElementById('out-stats');
+  statEl.innerHTML = STATS.map(s => {
+    const base = state.statPts[s];
+    const bonus = state.bonusStats.includes(s) ? 1 : 0;
+    return `
+      <div class="sheet-stat-box">
+        <div class="ss-name">${s.slice(0,3)}</div>
+        <div class="ss-val">${base + bonus}</div>
+        ${bonus ? '<div class="ss-bonus">+1 rolled</div>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  // Effort
+  const effEl = document.getElementById('out-effort');
+  effEl.innerHTML = EFFORTS.map(s => {
+    const base = state.effortPts[s];
+    const bonus = state.bonusStats.includes(s) ? 1 : 0;
+    return `
+      <div class="sheet-stat-box">
+        <div class="ss-name">${s}</div>
+        <div class="ss-val">${base + bonus}</div>
+        ${bonus ? '<div class="ss-bonus">+1 rolled</div>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  // Basic loot with full descriptions
+  const lootEl = document.getElementById('out-loot');
+  lootEl.innerHTML = [...state.loot].map(i => {
+    const item = LOOT_POOL[i];
+    return `
+      <div class="sheet-item-card">
+        <div class="sheet-item-name">${item.name}</div>
+        <div class="sheet-item-desc">${item.desc}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Spells with full descriptions
+  const spellsBlock = document.getElementById('out-spells-block');
+  const grant = SPELL_GRANTS[state.typeLoot];
+  if (grant) {
+    const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
+    const pickedSpells = [...state.spells]
+      .map(id => spellList.find(s => s.id === id))
+      .filter(Boolean);
+    const customEntries = state.customSpells
+      ? state.customSpells.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+
+    document.getElementById('out-spells').innerHTML = [
+      ...pickedSpells.map(sp => `
+        <div class="sheet-item-card">
+          <div class="sheet-item-name">${sp.name}</div>
+          <div class="sheet-item-desc">${sp.desc}</div>
+        </div>
+      `),
+      ...customEntries.map(s => `
+        <div class="sheet-item-card">
+          <div class="sheet-item-name">${s}</div>
+        </div>
+      `),
+    ].join('');
+    spellsBlock.style.display = 'block';
+  } else {
+    spellsBlock.style.display = 'none';
+  }
+
+  const modal = document.getElementById('sheet-modal');
+  modal.classList.add('open');
+  modal.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+
+  // Success flash on the finalize button
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = '✦ Character Sheet Ready ✦';
+  btn.classList.add('success');
+  setTimeout(() => {
+    btn.textContent = '◆ Finalize Character Sheet ◆';
+    btn.classList.remove('success');
+  }, 2500);
+}
+
+function closeSheet() {
+  const modal = document.getElementById('sheet-modal');
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ─────────────────────────────────────────────
+//  COLLAPSE / SUMMARY
+// ─────────────────────────────────────────────
+
+function toggleSection(num) {
+  // Collapse removed — no-op stub
+}
+
+function updateSummary(num) {
+  const lf = state.lifeform ? LIFEFORMS.find(l => l.id === state.lifeform) : null;
+  const tp = state.type ? TYPES.find(t => t.id === state.type) : null;
+  const ab = tp && state.typeAbility ? tp.abilities.find(a => a.id === state.typeAbility) : null;
+  const tl = tp && state.typeLoot ? tp.lootOptions.find(l => l.id === state.typeLoot) : null;
+
+  if (num === 1) {
+    const n = document.getElementById('sum-1-name');
+    const s = document.getElementById('sum-1-story');
+    if (n) n.textContent = state.charName || '';
+    if (s) s.textContent = state.story ? state.story.slice(0, 50) + (state.story.length > 50 ? '…' : '') : '';
+  }
+  if (num === 2) {
+    const el = document.getElementById('sum-2-lifeform');
+    if (el) el.textContent = lf ? lf.name : '';
+  }
+  if (num === 3) {
+    const t = document.getElementById('sum-3-type');
+    const a = document.getElementById('sum-3-ability');
+    const l = document.getElementById('sum-3-loot');
+    if (t) t.textContent = tp ? tp.name : '';
+    if (a) a.textContent = ab ? ab.name : '';
+    if (l) l.textContent = tl ? tl.name : '';
+  }
+  if (num === 4) {
+    const b1 = document.getElementById('sum-4-b1');
+    const b2 = document.getElementById('sum-4-b2');
+    if (b1) b1.textContent = state.bonusStats[0] ? '+1 ' + state.bonusStats[0].slice(0,3) : '';
+    if (b2) b2.textContent = state.bonusStats[1] ? '+1 ' + state.bonusStats[1].slice(0,3) : '';
+  }
+  if (num === 5) {
+    const el = document.getElementById('sum-5-stats');
+    if (el) el.textContent = STATS.map(s => {
+      const v = state.statPts[s] + (state.bonusStats.includes(s) ? 1 : 0);
+      return s.slice(0,3) + ' ' + v;
+    }).join(' · ');
+  }
+  if (num === 6) {
+    const el = document.getElementById('sum-6-effort');
+    if (el) el.textContent = EFFORTS.map(s => {
+      const v = state.effortPts[s] + (state.bonusStats.includes(s) ? 1 : 0);
+      return s.slice(0,3) + ' ' + v;
+    }).join(' · ');
+  }
+  if (num === 7) {
+    const el = document.getElementById('sum-7-loot');
+    if (el) el.textContent = [...state.loot].map(i => LOOT_POOL[i].name).join(' · ');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  START OVER
+// ─────────────────────────────────────────────
+
+function startOver() {
+  if (!confirm('Start over? All choices will be cleared.')) return;
+  closeSheet();
+  // Reset state
+  state.lifeform = null;
+  state.bonusStats = [];
+  state.bonusRolled = false;
+  state.type = null;
+  state.typeAbility = null;
+  state.typeLoot = null;
+  state.spells = new Set();
+  state.customSpells = '';
+  state.loot = new Set();
+  state.charName = '';
+  state.story = '';
+  state.statPts = { STRENGTH:0, DEXTERITY:0, CONSTITUTION:0, INTELLIGENCE:0, WISDOM:0, CHARISMA:0 };
+  state.statRemain = 6;
+  state.effortPts = { BASIC:0, WEAPON:0, MAGIC:0, ULTIMATE:0 };
+  state.effortRemain = 4;
+
+  // Reset UI
+  document.getElementById('name-field').value = '';
+  document.getElementById('story-field').value = '';
+  document.getElementById('char-count').textContent = '0';
+  document.getElementById('header-name').textContent = '';
+  document.getElementById('roll-btn').style.display = '';
+  document.getElementById('roll-results').innerHTML = '';
+  document.getElementById('type-sub').style.display = 'none';
+  const triggerSec = document.getElementById('spell-trigger-section');
+  if (triggerSec) triggerSec.style.display = 'none';
+  const customField = document.getElementById('custom-spells-field');
+  if (customField) customField.value = '';
+
+  // Reset all sections
+  [1,2,3,4,5,6,7].forEach(n => {
+    const sec = document.getElementById(`sec-${n}`);
+    sec.classList.remove('completed', 'active', 'skipped', 'expanded', 'locked');
+    const body = sec.querySelector('.section-body');
+    if (body) body.style.display = '';
+    if (n === 1) {
+      sec.classList.add('active');
+    } else {
+      sec.classList.add('locked');
+      sec.setAttribute('inert', '');
+    }
+  });
+
+  // Re-render
+  renderLifeforms();
+  renderTypes();
+  renderLoot();
+  renderStats();
+  renderEffort();
+  updateProgress();
+
+  // Hide sheet output, disable finalize
+  
+  document.getElementById('submit-btn').disabled = true;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─────────────────────────────────────────────
+//  RANDOM CHARACTER
+// ─────────────────────────────────────────────
+
+const RANDOM_NAMES = [
+  'Raya','Neo','Atara','Zeno','Zora','Sixtus','Baylor','Kash','Skye','Paxton',
+  'Siara','Geo','Blaise','Pax','Siena','Scorpio','Cypress','Madden','Soleil','Slater',
+  'Onyx','Sevyn','Alara','Raiden','Skyla','Sirocco','Echo','Maximus','Zadie','Wesson',
+  'Xoey','Blaze','Bexley','Xion','Sora','Xannon','Harmoni','Rivers','Zola','Zavier',
+  'Eloise','Xzander','Vesper','Xavior','Xiamara','Atlas','Katalina','Samson','Astra','Axl',
+  'Calliope','Sirius','Araceli','Calixto','Zia','Breck','Lennox','Storm','Caprice','Calix',
+  'Zeta','Cortez','Astoria','Zander','Trinity','Chasen','Memphis','Wylder','Gio','Dodge',
+  'Capri','Maverick','Azura','Jayceon','Sirena','Daxton','Odessa','Zayden','Katia','Icarus',
+  'Nikita','Axton','Signe','Zenon','Kitanna','Hunter','Santana','Bronx','Lorelai','Knoxx',
+  'Athena','Ajax','Zofia','Delta','Calytrix','Kage','Sol','Elio','Mercededes','Legend',
+  'Astrid','Blade','Sia','Quatro','Santara','Maximo','Ximena','Hollister','Ria','Thalion',
+  'Kira','Lynk','Starla','Zolton','Aspyn','Rider','Zoie','Jet','Seren','Kaelthas','Xia',
+  'Kylo','Shyla','Falco','Dominique','Salomon','Ariel','Kruz','Winter','Draven','Kali',
+  'Cisco','Solara','Archer','Essence','Solomon','Cali','Link','Artemis','Elyndor','Zephyr',
+  'Kyo','Zhora','Boone','Halo','Wolf','Enya','McCoy','Calypso','Fenwick','Lux','Condor',
+  'Kodiak','Chase','Karter','Zane','Katarina','True','Dasha','Aric','Elyse','Zio','Lexxy',
+  'Dallas','Koda','Bowman','Maxima','Xzavier','Eternity','Galdur','Aeryn','Salix','Amaya',
+  'Easton','Oaklynn','Eastyn','Novalee','Zyon','Rigel','Zephyrus','Wylda','Ace','Cleo',
+  'Holden','Sahara','Hendrix','Sequoia','Cage','Xerxes','Oren','Zuzana','Bodhi','Devyn',
+  'Justice','Scout','Jaxx','Tova','Diesel','Calyx','Caius','Amaris','Chance','Ruby','Knox',
+  'Vada','Kooper','Valeria','Houston','Enzo','Therin','Ciara','Cruz','Geneva','Maxim','Zinnia',
+  'Lexington','Zooey','Kannon','Helios','Iskandar','Destiny','Dutch','Kai','Saint','Amara',
+  'Maxton','Boston','Ledger','Solar','Aldrin','Elara','Hawk','Kitana','Skyler','Blayze','Seven',
+  'Danika','Lotus','Loki','Elowen','Genesis','Jensen','Luna','Tru','Domino','Titan','Empress',
+  'Lumina','Kassius','Branwen','Indigo','Marshall','Oakley','Zaire','Kara','Zackery','Juno',
+  'Vega','Ryu','Torian','Kit','Montana','Saylor','Blaize','Kyra','Zyair','Cosmo','Chyna',
+  'Killian','Lucian','Lumi','Ryder','Skylar','Diego','Maris','Brogan','Kano','Zenia','Ryker',
+  'Varrik','Nova','Saxon','Tia','Gauge','Saige','Hendrix','Astro','Xiomara','Dante','Jareth',
+  'River','Troy','Zara','Jakob','Solana','Kane','Krew','Sierra','Kaige','Malachai','Sarai',
+  'Xavier','Allura','Kitt','Valencia','Kush','Flynt','Ekaterina','Saber','Seraphina','Skylah',
+  'Aurelio','Aurelia','Lawson','Zaria','Polaris','Xeno','Venus','Scipio','Elara','Starr','Daxon',
+  'Jazmin','Maxen','Crimson','Xara','Felix','Xenia','Loko','Lyra','Zahara','Gatlin','Kora',
+  'Ronin','Emberlynn','Luma','Ezekiel','Katara','Exton','Amiko','Acadia','Jacoby','Maia',
+  'Teage','Harley','Octavia','Kairo','Zelda','Caspian','Vaelora','Atarah','Kashton','Moxie',
+  'Wiley','Jordyn','Elektra','Zen','Lexi','Crew','Selene','Catalina','Laken','Sadie','Zeppelin',
+  'Wilder','Ember','Rex','Roxi','Duke','Alina','Izzy','Luka','Solace','Brixton','Lynx','Wynter',
+  'Zain','Cosima','Gunner','Mira','Kiara','Rip','Tyra','Cutler','Reno','Maya','Hawke','Sixta',
+  'Indy','Ysolde','Luxe','Stirling','Xen','Grex','Jett','Stormi','Klay','Six','Khai','Calista',
+  'Mirabelle','Weston','Berlin','Kaiser','Zeke','Ripley','Acer','Azure','Maddox','Thalindra',
+  'Riverlynn','Zayd','Clio','Kreed','Lazar','Sascha','Loxo','Cadence','Roman','Fionna','Skylin',
+  'Benz','Dixie','Electra','Zayne','Klara','Xenon','Dakota','Santiago','Nymeria','Twyla','Croix',
+  'Fox','Isis','Cato','Phoenix','Indio','Eden','Tripp','Arabella','Xaria','Gaige','Jenesis',
+  'Arcadia','Dax','Xena','Axel','Gaia','Xander','Celestria','Bellatrix','Jax','Ender','Kodi',
+  'Keanu','Valkyrie','Carlson','Haven','Zion','Valoria','Carter','Konrad','Creed','Reya',
+  'Ulysses','Saskia','Colt','Katana','Evander','Liora','Denali','Inga','Merlin','Saffire',
+  'Helix','Elexa','Deacon','Liberty','Karson','Elysia','Fallon','Gemini','Solaris','Freya',
+  'Ryden','Olexa','Gage','Raven','Kyng','Zephyra','Ivory','Skai','Sasha','Wisteria','Cyprian',
+  'Snoh','Indiana','Sapphire','Locke','Kassandra',
+];
+
+function randomizeCharacter() {
+  if (state.type || state.lifeform) {
+    if (!confirm('Generate a random character? This will clear all current choices.')) return;
+  }
+
+  // Reset first
+  startOverSilent();
+
+  // Pick random name
+  const randomName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+  state.charName = randomName;
+  document.getElementById('name-field').value = randomName;
+  const nameDisplay = document.getElementById('header-name');
+  if (nameDisplay) nameDisplay.textContent = '— ' + randomName + ' —';
+
+  // Pick random lifeform
+  state.lifeform = LIFEFORMS[Math.floor(Math.random() * LIFEFORMS.length)].id;
+
+  // Pick random type
+  const tp = TYPES[Math.floor(Math.random() * TYPES.length)];
+  state.type = tp.id;
+  state.typeAbility = tp.abilities[Math.floor(Math.random() * tp.abilities.length)].id;
+  const lootOpt = tp.lootOptions[Math.floor(Math.random() * tp.lootOptions.length)];
+  state.typeLoot = lootOpt.id;
+
+  // Handle spell grants — pick randomly and update trigger UI
+  const grant = SPELL_GRANTS[lootOpt.id];
+  if (grant) {
+    const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
+    const shuffled = [...spellList].sort(() => Math.random() - 0.5);
+    state.spells = new Set(shuffled.slice(0, grant.count).map(s => s.id));
+    // Show and update trigger button
+    const triggerSection = document.getElementById('spell-trigger-section');
+    if (triggerSection) triggerSection.style.display = 'block';
+    const btn = document.getElementById('spell-trigger-btn');
+    const status = document.getElementById('spell-trigger-status');
+    if (btn) {
+      const pickedNames = [...state.spells].map(id => spellList.find(s => s.id === id)?.name).filter(Boolean);
+      btn.textContent = `✓ ${grant.count} Spell${grant.count > 1 ? 's' : ''} Chosen — Edit`;
+      btn.classList.add('complete');
+      if (status) {
+        status.textContent = pickedNames.join(', ');
+        status.classList.add('done');
+      }
+    }
+  }
+
+  // Roll bonus stats
+  const pool = [...ALL_STAT_EFFORT];
+  const picks = [];
+  while (picks.length < 2) {
+    picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  }
+  state.bonusStats = picks;
+  state.bonusRolled = true;
+
+  // Distribute 6 stat points randomly
+  let statPtsLeft = 6;
+  while (statPtsLeft > 0) {
+    const s = STATS[Math.floor(Math.random() * STATS.length)];
+    state.statPts[s]++;
+    statPtsLeft--;
+  }
+  state.statRemain = 0;
+
+  // Distribute 4 effort points randomly
+  let effortPtsLeft = 4;
+  while (effortPtsLeft > 0) {
+    const s = EFFORTS[Math.floor(Math.random() * EFFORTS.length)];
+    state.effortPts[s]++;
+    effortPtsLeft--;
+  }
+  state.effortRemain = 0;
+
+  // Pick 4 random basic loot
+  const lootIndices = [...Array(LOOT_POOL.length).keys()].sort(() => Math.random() - 0.5);
+  state.loot = new Set(lootIndices.slice(0, 4));
+
+  // Update all UI
+  renderLifeforms();
+  renderTypes();
+  renderLoot();
+  renderStats();
+  renderEffort();
+
+  // Show type-sub panel
+  document.getElementById('type-sub').style.display = 'block';
+  const tpData = TYPES.find(t => t.id === state.type);
+  document.getElementById('ability-cards').innerHTML = tpData.abilities.map(a => `
+    <div class="sub-card ${state.typeAbility === a.id ? 'selected' : ''}" data-action="ability" data-id="${a.id}" tabindex="0" role="radio">
+      <div class="sub-name">${a.name}</div>
+      <div class="sub-text">${a.text}</div>
+    </div>
+  `).join('');
+  document.getElementById('loot-type-cards').innerHTML = tpData.lootOptions.map(l => `
+    <div class="sub-card ${state.typeLoot === l.id ? 'selected' : ''}" data-action="typeloot" data-id="${l.id}" tabindex="0" role="radio">
+      <div class="sub-name">${l.name}</div>
+      <div class="sub-text">${l.text}</div>
+    </div>
+  `).join('');
+
+  // Show roll result display
+  document.getElementById('roll-btn').style.display = 'none';
+  document.getElementById('roll-results').innerHTML = picks.map(s => `
+    <div class="rolled-stat">
+      <div class="stat-label">${s}</div>
+      <div class="stat-val">+1</div>
+    </div>
+  `).join('');
+
+  // Mark all sections complete
+  [1,2,3,4,5,6,7].forEach(n => {
+    const sec = document.getElementById(`sec-${n}`);
+    sec.classList.remove('locked', 'active', 'skipped', 'expanded');
+    sec.removeAttribute('inert');
+    sec.classList.add('completed');
+    updateSummary(n);
+  });
+
+  // Enable finalize
+  updateIncompleteList();
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Silent reset used by randomize (no confirm, no scroll)
+function startOverSilent() {
+  state.lifeform = null;
+  state.bonusStats = [];
+  state.bonusRolled = false;
+  state.type = null;
+  state.typeAbility = null;
+  state.typeLoot = null;
+  state.spells = new Set();
+  state.customSpells = '';
+  state.loot = new Set();
+  state.charName = '';
+  state.story = '';
+  state.statPts = { STRENGTH:0, DEXTERITY:0, CONSTITUTION:0, INTELLIGENCE:0, WISDOM:0, CHARISMA:0 };
+  state.statRemain = 6;
+  state.effortPts = { BASIC:0, WEAPON:0, MAGIC:0, ULTIMATE:0 };
+  state.effortRemain = 4;
+  document.getElementById('header-name').textContent = '';
+  
+  updateIncompleteList();
+}
+// ─────────────────────────────────────────────
+
+function unlockSection(num) {
+  const sec = document.getElementById(`sec-${num}`);
+  if (sec) {
+    sec.classList.remove('locked');
+    sec.classList.add('active');
+    sec.removeAttribute('inert');
+  }
+}
+
+function lockSection(num) {
+  // Locking removed — sections always accessible
+  // Kept as stub so existing call sites don't error
+}
+
+function markCompleted(num) {
+  const sec = document.getElementById(`sec-${num}`);
+  if (sec) {
+    sec.classList.add('completed');
+    sec.classList.remove('active');
+    updateSummary(num);
+  }
+}
+
+function hide(id) {
+  document.getElementById(id)?.classList.remove('visible');
+}
+
+function scrollToSection(num) {
+  const sec = document.getElementById(`sec-${num}`);
+  if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function updateProgress() {
+  const completed = [1,2,3,4,5,6,7].filter(n => {
+    const el = document.getElementById(`sec-${n}`);
+    return el && el.classList.contains('completed');
+  }).length;
+  const pct = Math.round((completed / 7) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  updateIncompleteList();
+}
+
+function updateIncompleteList() {
+  const STEP_LABELS = {
+    1: 'Name & Story',
+    2: 'Lifeform',
+    3: 'Type, Ability & Starting Loot',
+    4: 'Roll Bonus Stats',
+    5: 'Assign 6 Stat Points',
+    6: 'Assign 4 Effort Points',
+    7: 'Choose 4 Basic Loot',
+  };
+
+  const incomplete = [1,2,3,4,5,6,7].filter(n => {
+    const el = document.getElementById(`sec-${n}`);
+    return el && !el.classList.contains('completed');
+  });
+
+  // Also check step 5 and 6 specifically for remaining points, step 7 for loot count
+  if (!incomplete.includes(5) && state.statRemain > 0) incomplete.push(5);
+  if (!incomplete.includes(6) && state.effortRemain > 0) incomplete.push(6);
+  if (!incomplete.includes(7) && state.loot.size < MAX_LOOT) incomplete.push(7);
+  const uniqueIncomplete = [...new Set(incomplete)].sort((a,b) => a-b);
+
+  const list = document.getElementById('incomplete-list');
+  if (!list) return;
+
+  if (uniqueIncomplete.length === 0) {
+    list.innerHTML = '';
+    document.getElementById('submit-btn').disabled = false;
+  } else {
+    list.innerHTML = `
+      <div class="incomplete-header">These steps still need to be completed:</div>
+      <div class="incomplete-pills">
+        ${uniqueIncomplete.map(n => `<div class="incomplete-item" onclick="scrollToSection(${n})" title="Go to Step ${n.toString().padStart(2,'0')}">${STEP_LABELS[n]}</div>`).join('')}
+      </div>
+    `;
+    document.getElementById('submit-btn').disabled = true;
+  }
+}
+
+// Keyboard support for data-action cards
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeSheet();
+    closeSpellPicker();
+    return;
+  }
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const card = e.target.closest('[data-action]');
+  if (!card) return;
+  e.preventDefault();
+  card.click();
+});
+
+// Close modals on backdrop click
+document.getElementById('sheet-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeSheet();
+});
+document.getElementById('spell-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeSpellPicker();
+});
+</script>
+</body>
+</html>
