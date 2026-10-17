@@ -106,7 +106,6 @@
     min-height: 22px;
   }
 
-  .step-counter { display: none; }
 
   /* ── PROGRESS BAR ── */
   .progress-bar-wrap {
@@ -185,32 +184,9 @@
     font-weight: 700;
   }
 
-  /* No locking — sections always accessible */
-  .section.locked {
-    opacity: 1;
-    pointer-events: auto;
-  }
 
-  .section.skipped {
-    border-left: 3px solid var(--red);
-    background: rgba(221, 34, 0, 0.04);
-  }
 
-  .section.skipped .step-num {
-    background: var(--red);
-    border-color: var(--red);
-    color: var(--white);
-  }
 
-  .section.skipped .section-title::after {
-    content: ' — come back to this';
-    font-family: 'Barlow', sans-serif;
-    font-weight: 400;
-    font-size: 13px;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: var(--red);
-  }
 
   /* ── SECTION HEADER ── */
   .section-header {
@@ -464,7 +440,8 @@
     border-top-color: #000;
   }
 
-  .stat-row:hover .stat-tooltip { display: block; }
+  .stat-row:hover .stat-tooltip,
+  .stat-row:focus-within .stat-tooltip { display: block; }
 
   .stat-row .stat-name {
     font-family: 'Oswald', sans-serif;
@@ -697,6 +674,20 @@
     margin-bottom: 4px;
   }
 
+  .loot-notice {
+    display: none;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    background: var(--selected);
+    border-left: 3px solid var(--red);
+    padding: 10px 14px;
+    margin-bottom: 12px;
+  }
+
+  .loot-notice.show { display: block; animation: modal-in 0.2s ease; }
+
   .loot-item-desc {
     font-family: 'Barlow', sans-serif;
     font-size: 13px;
@@ -864,36 +855,8 @@
   }
 
   /* ── SKIP BUTTON ── */
-  .step1-actions {
-    margin-top: 14px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
 
-  .skip-btn {
-    background: transparent;
-    color: var(--text-dim);
-    border: 1px dashed var(--line-bold);
-    font-family: 'Oswald', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 8px 18px;
-    cursor: pointer;
-    transition: all 0.12s;
-  }
 
-  .skip-btn:hover { border-color: var(--text-dim); color: var(--white); }
-
-  /* ── SUBMIT ── */
-  .submit-section {
-    padding: 32px 40px;
-    text-align: center;
-    background: #000;
-    border-top: 3px solid var(--red);
-  }
 
   .submit-btn {
     background: var(--red);
@@ -942,6 +905,7 @@
   }
 
   .incomplete-item {
+    background: transparent;
     font-family: 'Oswald', sans-serif;
     font-size: 12px;
     font-weight: 700;
@@ -1126,21 +1090,7 @@
   .copy-btn.copied { border-color: var(--red); color: var(--red); }
 
   /* ── WARN MESSAGES ── */
-  .warn-msg {
-    font-family: 'Barlow', sans-serif;
-    font-size: 14px;
-    color: var(--red);
-    margin-top: 10px;
-    display: none;
-  }
 
-  .warn-msg.visible { display: block; }
-
-  /* ── FOCUS STYLES ── */
-  :focus-visible {
-    outline: 2px solid var(--red);
-    outline-offset: 2px;
-  }
 
   .choice-card:focus-visible,
   .type-card:focus-visible,
@@ -1292,7 +1242,7 @@
     <!-- ══════════════════════════════════════════
          STEP 1 — NAME & STORY
     ══════════════════════════════════════════ -->
-    <div class="section active" id="sec-1">
+    <div class="section" id="sec-1">
       <div class="section-header">
         <span class="step-num">Step 01</span>
         <span class="section-title">Name &amp; Story</span>
@@ -1300,18 +1250,17 @@
       <div class="section-body">
         <p class="section-hint">Give your character a name, then write one sentence about what is happening RIGHT NOW — what pushed you from the ordinary into adventure?</p>
         <label class="name-label" for="name-field">CHARACTER NAME</label>
-        <input type="text" class="name-field" id="name-field" maxlength="60" placeholder="e.g. Finn Mertens" oninput="onStoryInput()" />
+        <input type="text" class="name-field" id="name-field" maxlength="60" placeholder="e.g. Maren Ashveil" oninput="onStoryInput()" />
         <label class="name-label" style="margin-top:14px;" for="story-field">1-LINE STORY</label>
         <textarea class="story-field" id="story-field" rows="3" maxlength="200" placeholder="e.g. My village burned last night — and I recognized the man who lit the torch." oninput="onStoryInput()"></textarea>
         <div class="char-count"><span id="char-count">0</span> / 200</div>
-        <p class="warn-msg" id="story-warn">Enter a name and write at least one sentence to continue.</p>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════
          STEP 2 — LIFEFORM
     ══════════════════════════════════════════ -->
-    <div class="section locked" id="sec-2">
+    <div class="section" id="sec-2">
       <div class="section-header">
         <span class="step-num">Step 02</span>
         <span class="section-title">Choose Your Lifeform</span></div>
@@ -1324,7 +1273,7 @@
     <!-- ══════════════════════════════════════════
          STEP 3 — TYPE
     ══════════════════════════════════════════ -->
-    <div class="section locked" id="sec-3">
+    <div class="section" id="sec-3">
       <div class="section-header">
         <span class="step-num">Step 03</span>
         <span class="section-title">Choose Your Type</span></div>
@@ -1353,7 +1302,7 @@
     <!-- ══════════════════════════════════════════
          STEP 4 — ROLL BONUS STATS
     ══════════════════════════════════════════ -->
-    <div class="section locked" id="sec-4">
+    <div class="section" id="sec-4">
       <div class="section-header">
         <span class="step-num">Step 04</span>
         <span class="section-title">Roll Bonus Stats</span></div>
@@ -1363,14 +1312,13 @@
           <button class="roll-btn" id="roll-btn" onclick="rollBonusStats()">▶ Roll 2 Bonuses</button>
           <div class="roll-results" id="roll-results"></div>
         </div>
-        <p class="warn-msg" id="roll-warn">Roll your bonus stats before continuing.</p>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════
          STEP 5 — ASSIGN STAT POINTS
     ══════════════════════════════════════════ -->
-    <div class="section locked" id="sec-5">
+    <div class="section" id="sec-5">
       <div class="section-header">
         <span class="step-num">Step 05</span>
         <span class="section-title">Assign 6 Stat Points</span></div>
@@ -1381,14 +1329,13 @@
           <span class="pts-num" id="stat-pts">6</span>
         </div>
         <div class="stat-grid" id="stat-grid"></div>
-        <p class="warn-msg" id="stat-warn">Spend all 6 points before continuing.</p>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════
          STEP 6 — ASSIGN EFFORT POINTS
     ══════════════════════════════════════════ -->
-    <div class="section locked" id="sec-6">
+    <div class="section" id="sec-6">
       <div class="section-header">
         <span class="step-num">Step 06</span>
         <span class="section-title">Assign 4 Effort Points</span></div>
@@ -1399,14 +1346,13 @@
           <span class="pts-num" id="effort-pts">4</span>
         </div>
         <div class="stat-grid effort-grid-el" id="effort-grid"></div>
-        <p class="warn-msg" id="effort-warn">Spend all 4 points before continuing.</p>
       </div>
     </div>
 
     <!-- ══════════════════════════════════════════
          STEP 7 — BASIC LOOT
     ══════════════════════════════════════════ -->
-    <div class="section locked" id="sec-7">
+    <div class="section" id="sec-7">
       <div class="section-header">
         <span class="step-num">Step 07</span>
         <span class="section-title">Choose 4 Basic Loot</span></div>
@@ -1416,8 +1362,8 @@
           <span>Items Remaining:</span>
           <span class="pts-num" id="loot-pts">4</span>
         </div>
+        <div class="loot-notice" id="loot-notice" role="status" aria-live="polite"></div>
         <div class="loot-grid" id="loot-grid"></div>
-        <p class="warn-msg" id="loot-warn">Choose exactly 4 items to continue.</p>
       </div>
     </div>
 
@@ -1525,6 +1471,7 @@
 </div>
 
 <script>
+
 // ─────────────────────────────────────────────
 //  DATA
 // ─────────────────────────────────────────────
@@ -1673,6 +1620,36 @@ const TYPES = [
       { id: 'apothecary',       name: 'APOTHECARY CABINET', text: 'A small folding case of vials and jars. Holds 12 random RARE INGREDIENTS' },
     ],
   },
+  {
+    id: 'drifter',
+    name: 'Drifter',
+    desc: 'A rough and tumble nomad from the streets',
+    abilities: [
+      { id: 'brawler',   name: 'BRAWLER',    text: 'On an unarmed attack roll of natural 12+, attack again' },
+      { id: 'longjump',  name: 'LONG JUMP',  text: 'As part of a DASH, jump FAR without a DEX roll' },
+      { id: 'grifting',  name: 'GRIFTING',   text: 'With charm and a silver tongue, roll CHA to relieve an unsuspecting mark from a piece of LOOT' },
+    ],
+    lootOptions: [
+      { id: 'brasswraps',    name: 'BRASS WRAPS',     text: 'Lined with brass beads, roll DOUBLE BASIC on unarmed attacks' },
+      { id: 'khettishcowl',  name: 'KHETTISH COWL',   text: 'Resist environmental effects for D4 ROUNDS' },
+      { id: 'useduniform',   name: 'USED UNIFORM',    text: '+1 DEF, keep a used uniform from a chosen faction on hand. In passing, the uniform can pass muster, but may not hold up under inspection' },
+    ],
+  },
+  {
+    id: 'wildling',
+    name: 'Wildling',
+    desc: 'Good folk as unpredictable as a rainstorm',
+    abilities: [
+      { id: 'spellsong',      name: 'SPELLSONG',      text: 'Increase the range of one spell to those that can hear you' },
+      { id: 'luckyfind',      name: 'LUCKY FIND',     text: 'Once per session, roll on the SHABBY loot table' },
+      { id: 'safertogether',  name: 'SAFER TOGETHER', text: 'When unarmored, your DEF bonus equals the number of allies NEAR you' },
+    ],
+    lootOptions: [
+      { id: 'ringweircluck',    name: 'RING OF WEIRD LUCK',   text: 'For every Nat 1, gain a reroll on a future turn' },
+      { id: 'evergreentwig',    name: 'EVERGREEN TWIG',        text: 'Gain any 3 WIS SPELLS. A magical stick that can change into a fishing pole, a long bow, long sword, or a staff' },
+      { id: 'hillmansfishing',  name: "HILLMAN'S FISHING POLE", text: 'Complete a HEART of EFFORT at ANY mass of water, and gain a Tasty Trout. Consume to heal to full HEARTS' },
+    ],
+  },
 ];
 
 const INT_SPELLS = [
@@ -1788,6 +1765,7 @@ const SPELL_GRANTS = {
   stafftransmutation: { list: 'CHA', count: 2 },
   ritualblade:        { list: 'CHA', count: 1 },
   gnarledbroom:       { list: 'CHA', count: 2 },
+  evergreentwig:      { list: 'WIS', count: 3 },
 };
 
 const LOOT_POOL = [
@@ -1798,11 +1776,11 @@ const LOOT_POOL = [
   { name: "MENDER'S TOOLBOX",     desc: "Hammer and pliers, rivets, scrap steel, leather strips, spare buckles and iron nails. Use for anything from armor to boat repair." },
   { name: "HEALER'S CASE",        desc: "Using this kit of bandages, tinctures and serums, heal 1 HP on an ally with an INT or WIS roll. Includes bottles, scalpel, and anti-venom." },
   { name: "CLIMBING GEAR",        desc: "Grapple hooks, extreme rope, steel belt clips, 2 pairs of boot crampons, iron spikes and hammer. Worn over one shoulder." },
-  { name: "MIXED ARMOR GARB",     desc: "Common garb for adventurers, a mix of padded gambeson, leather belts, and armor odds & ends. +2 DEFENSE" },
-  { name: "HEAVY PLATE and CHAIN ARMOR", desc: "A cumbersome set of steel plates, chainmail, and steel boots for heavy combat. +4 DEFENSE, DEX rolls always HARD" },
-  { name: "COMMON SHIELD",        desc: "A round wooden shield and strap suited for travel on foot. +2 DEFENSE. If hit, sacrifice the shield to absorb all of any 1 attack." },
-  { name: "IRON SHIELD",          desc: "This heavy shield is steel with iron bands. +3 DEFENSE. While using this shield, you cannot use one hand, occupies 2 inventory spaces." },
-  { name: "TRAVELER'S GARB",      desc: "A lighter, more comfortable set of clothes for travelers. Only +1 DEFENSE, but includes 2 extra spaces for inventory." },
+  { name: "MIXED ARMOR GARB", slot: "armor",     desc: "Common garb for adventurers, a mix of padded gambeson, leather belts, and armor odds & ends. +2 DEFENSE" },
+  { name: "HEAVY PLATE and CHAIN ARMOR", slot: "armor", desc: "A cumbersome set of steel plates, chainmail, and steel boots for heavy combat. +4 DEFENSE, DEX rolls always HARD" },
+  { name: "COMMON SHIELD", slot: "shield",        desc: "A round wooden shield and strap suited for travel on foot. +2 DEFENSE. If hit, sacrifice the shield to absorb all of any 1 attack." },
+  { name: "IRON SHIELD", slot: "shield",          desc: "This heavy shield is steel with iron bands. +3 DEFENSE. While using this shield, you cannot use one hand, occupies 2 inventory spaces." },
+  { name: "TRAVELER'S GARB", slot: "armor",      desc: "A lighter, more comfortable set of clothes for travelers. Only +1 DEFENSE, but includes 2 extra spaces for inventory." },
   { name: "SWORD AND SCABBARD",   desc: "A trusty blade of whatever size or make suits your training, leather sheath, belts, and sharpening kit if the blade is damaged." },
   { name: "BATTLE AXE AND HARNESS", desc: "A huge chopping weapon of one or two blades. Damage timbers or structures, but impossible to conceal." },
   { name: "SPEARMAN'S KIT",       desc: "A ten foot oak shaft with swappable blade tip that can be switched to hook, spearhead, or glaive. Can attack targets up to NEAR range." },
@@ -1839,872 +1817,6 @@ const EFFORT_DESCS = {
 
 // ─────────────────────────────────────────────
 //  STATE
-// ─────────────────────────────────────────────
-
-const state = {
-  lifeform: null,
-  bonusStats: [],
-  bonusRolled: false,
-  type: null,
-  typeAbility: null,
-  typeLoot: null,
-  spells: new Set(),       // selected spell IDs from list
-  customSpells: '',        // write-in spells
-  loot: new Set(),
-  charName: '',
-  story: '',
-  statPts: { STRENGTH:0, DEXTERITY:0, CONSTITUTION:0, INTELLIGENCE:0, WISDOM:0, CHARISMA:0 },
-  statRemain: 6,
-  effortPts: { BASIC:0, WEAPON:0, MAGIC:0, ULTIMATE:0 },
-  effortRemain: 4,
-};
-
-const MAX_LOOT = 4;
-const MAX_STAT = 6;
-const MAX_EFFORT = 4;
-
-// ─────────────────────────────────────────────
-//  INIT
-// ─────────────────────────────────────────────
-
-window.onload = () => {
-  renderLifeforms();
-  renderTypes();
-  renderLoot();
-  renderStats();
-  renderEffort();
-  updateIncompleteList();
-};
-
-// ─────────────────────────────────────────────
-//  LIFEFORM
-// ─────────────────────────────────────────────
-
-function renderLifeforms() {
-  const el = document.getElementById('lifeform-cards');
-  el.innerHTML = LIFEFORMS.map(lf => `
-    <div class="choice-card ${state.lifeform === lf.id ? 'selected' : ''}" data-action="lifeform" data-id="${lf.id}" tabindex="0" role="radio" aria-checked="${state.lifeform === lf.id}">
-      <div class="card-name">${lf.name}</div>
-    </div>
-  `).join('');
-}
-
-function selectLifeform(id) {
-  state.lifeform = id;
-  renderLifeforms();
-  unlockSection(3);
-  updateProgress();
-  markCompleted(2);
-}
-
-// ─────────────────────────────────────────────
-//  ROLL BONUS STATS
-// ─────────────────────────────────────────────
-
-function rollBonusStats() {
-  const pool = [...ALL_STAT_EFFORT];
-  const picks = [];
-  while (picks.length < 2) {
-    const idx = Math.floor(Math.random() * pool.length);
-    picks.push(pool.splice(idx, 1)[0]);
-  }
-  state.bonusStats = picks;
-  state.bonusRolled = true;
-
-  const el = document.getElementById('roll-results');
-  el.innerHTML = picks.map(s => `
-    <div class="rolled-stat fresh">
-      <div class="stat-label">${s}</div>
-      <div class="stat-val">+1</div>
-    </div>
-  `).join('');
-
-  // Remove fresh class after animation
-  setTimeout(() => {
-    el.querySelectorAll('.rolled-stat').forEach(e => e.classList.remove('fresh'));
-  }, 600);
-
-  document.getElementById('roll-btn').style.display = 'none';
-  renderStats();
-  renderEffort();
-  unlockSection(5);
-  updateProgress();
-  markCompleted(4);
-}
-
-// ─────────────────────────────────────────────
-//  TYPE
-// ─────────────────────────────────────────────
-
-function renderTypes() {
-  const el = document.getElementById('type-cards');
-  el.innerHTML = TYPES.map(t => `
-    <div class="type-card ${state.type === t.id ? 'selected' : ''}" data-action="type" data-id="${t.id}" tabindex="0" role="radio" aria-checked="${state.type === t.id}">
-      <div class="type-name">${t.name}</div>
-      <div class="type-ability">${t.desc}</div>
-    </div>
-  `).join('');
-}
-
-function selectType(id) {
-  if (state.type !== id && (state.typeAbility || state.typeLoot)) {
-    if (!confirm('Changing your Type will clear your Ability and Starting Loot choices. Continue?')) return;
-  }
-  if (state.type !== id) {
-    state.typeAbility = null;
-    state.typeLoot = null;
-    state.spells = new Set();
-    state.customSpells = '';
-    // Reset spell trigger UI
-    const triggerSection = document.getElementById('spell-trigger-section');
-    if (triggerSection) triggerSection.style.display = 'none';
-    const customField = document.getElementById('custom-spells-field');
-    if (customField) customField.value = '';
-    // Revert Step 3 to active (incomplete) when type changes
-    const sec3 = document.getElementById('sec-3');
-    if (sec3) {
-      sec3.classList.remove('completed');
-      sec3.classList.add('active');
-    }
-  }
-  state.type = id;
-  renderTypes();
-
-  const tp = TYPES.find(t => t.id === id);
-  const sub = document.getElementById('type-sub');
-  sub.style.display = 'block';
-
-  document.getElementById('ability-cards').innerHTML = tp.abilities.map(a => `
-    <div class="sub-card ${state.typeAbility === a.id ? 'selected' : ''}" data-action="ability" data-id="${a.id}" tabindex="0" role="radio">
-      <div class="sub-name">${a.name}</div>
-      <div class="sub-text">${a.text}</div>
-    </div>
-  `).join('');
-
-  document.getElementById('loot-type-cards').innerHTML = tp.lootOptions.map(l => `
-    <div class="sub-card ${state.typeLoot === l.id ? 'selected' : ''}" data-action="typeloot" data-id="${l.id}" tabindex="0" role="radio">
-      <div class="sub-name">${l.name}</div>
-      <div class="sub-text">${l.text}</div>
-    </div>
-  `).join('');
-
-  checkTypeComplete();
-}
-
-function selectTypeAbility(id) {
-  state.typeAbility = id;
-  const tp = TYPES.find(t => t.id === state.type);
-  document.getElementById('ability-cards').innerHTML = tp.abilities.map(a => `
-    <div class="sub-card ${state.typeAbility === a.id ? 'selected' : ''}" data-action="ability" data-id="${a.id}" tabindex="0" role="radio">
-      <div class="sub-name">${a.name}</div>
-      <div class="sub-text">${a.text}</div>
-    </div>
-  `).join('');
-  checkTypeComplete();
-}
-
-function selectTypeLoot(id) {
-  state.typeLoot = id;
-  state.spells = new Set();
-  state.customSpells = '';
-  const customField = document.getElementById('custom-spells-field');
-  if (customField) customField.value = '';
-
-  const tp = TYPES.find(t => t.id === state.type);
-  document.getElementById('loot-type-cards').innerHTML = tp.lootOptions.map(l => `
-    <div class="sub-card ${state.typeLoot === l.id ? 'selected' : ''}" data-action="typeloot" data-id="${l.id}" tabindex="0" role="radio">
-      <div class="sub-name">${l.name}</div>
-      <div class="sub-text">${l.text}</div>
-    </div>
-  `).join('');
-
-  const grant = SPELL_GRANTS[id];
-  const triggerSection = document.getElementById('spell-trigger-section');
-  if (grant) {
-    triggerSection.style.display = 'block';
-    const btn = document.getElementById('spell-trigger-btn');
-    const status = document.getElementById('spell-trigger-status');
-    btn.textContent = `Choose ${grant.count} ${grant.list} Spell${grant.count > 1 ? 's' : ''} →`;
-    btn.classList.remove('complete');
-    status.textContent = '';
-    status.classList.remove('done');
-  } else {
-    triggerSection.style.display = 'none';
-  }
-
-  checkTypeComplete();
-}
-
-function openSpellPicker() {
-  const grant = SPELL_GRANTS[state.typeLoot];
-  if (!grant) return;
-  const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
-  document.getElementById('spell-modal-title').textContent =
-    `Choose ${grant.count} ${grant.list} Spell${grant.count > 1 ? 's' : ''}`;
-  document.getElementById('spell-modal-stamp').textContent =
-    `${grant.list} SPELLS · SELECT ${grant.count}`;
-  renderSpellPicker(spellList, grant.count);
-  document.getElementById('spell-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeSpellPicker() {
-  document.getElementById('spell-modal').classList.remove('open');
-  document.body.style.overflow = '';
-  // Update trigger button status
-  const grant = SPELL_GRANTS[state.typeLoot];
-  if (grant) {
-    const customCount = state.customSpells
-      ? state.customSpells.split(',').map(s => s.trim()).filter(Boolean).length : 0;
-    const total = state.spells.size + customCount;
-    const btn = document.getElementById('spell-trigger-btn');
-    const status = document.getElementById('spell-trigger-status');
-    if (total >= grant.count) {
-      btn.textContent = `✓ ${total} Spell${total > 1 ? 's' : ''} Chosen — Edit`;
-      btn.classList.add('complete');
-      status.textContent = [...state.spells].map(id => {
-        const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
-        return spellList.find(s => s.id === id)?.name;
-      }).filter(Boolean).join(', ');
-      status.classList.add('done');
-    } else {
-      btn.textContent = `Choose ${grant.count} ${grant.list} Spell${grant.count > 1 ? 's' : ''} → (${total}/${grant.count})`;
-      btn.classList.remove('complete');
-      status.textContent = '';
-    }
-  }
-  checkTypeComplete();
-}
-
-function renderSpellPicker(spellList, max) {
-  const counter = document.getElementById('spell-counter');
-  const remaining = max - state.spells.size;
-  counter.innerHTML = `<span>Spells Remaining:</span><span class="pts-num">${remaining}</span>`;
-
-  document.getElementById('spell-grid').innerHTML = spellList.map(sp => {
-    const sel = state.spells.has(sp.id);
-    const full = state.spells.size >= max && !sel;
-    return `
-      <div class="spell-card ${sel ? 'selected' : ''} ${full ? 'disabled' : ''}" data-action="spell" data-id="${sp.id}" tabindex="0" role="checkbox">
-        <div class="spell-check">${sel ? '✓' : ''}</div>
-        <div class="spell-card-text">
-          <div class="spell-card-name">${sp.name}</div>
-          <div class="spell-card-desc">${sp.desc}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-// ─────────────────────────────────────────────
-//  DELEGATED EVENT LISTENER
-//  All card clicks use data-action / data-id
-//  so apostrophes in content never break HTML
-// ─────────────────────────────────────────────
-document.addEventListener('click', function(e) {
-  const card = e.target.closest('[data-action]');
-  if (!card) return;
-  const action = card.dataset.action;
-  const id = card.dataset.id;
-  if (action === 'lifeform') selectLifeform(id);
-  else if (action === 'type')     selectType(id);
-  else if (action === 'ability')  selectTypeAbility(id);
-  else if (action === 'typeloot') selectTypeLoot(id);
-  else if (action === 'spell')    toggleSpell(id);
-  else if (action === 'loot')     toggleLoot(parseInt(id));
-});
-
-function toggleSpell(id) {
-  const grant = SPELL_GRANTS[state.typeLoot];
-  if (!grant) return;
-  const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
-  if (state.spells.has(id)) {
-    state.spells.delete(id);
-  } else if (state.spells.size < grant.count) {
-    state.spells.add(id);
-  }
-  renderSpellPicker(spellList, grant.count);
-  checkTypeComplete();
-}
-
-function onCustomSpellsInput() {
-  state.customSpells = document.getElementById('custom-spells-field').value.trim();
-  checkTypeComplete();
-}
-
-function checkTypeComplete() {
-  if (!state.type || !state.typeAbility || !state.typeLoot) {
-    lockSection(4);
-    return;
-  }
-  const grant = SPELL_GRANTS[state.typeLoot];
-  if (grant && state.spells.size < grant.count && state.customSpells.length === 0) {
-    // Allow through if they've picked at least some from list OR written custom ones,
-    // but require the full count to be met across both sources.
-    // Count custom spells as comma-separated entries.
-    const customCount = state.customSpells
-      ? state.customSpells.split(',').map(s => s.trim()).filter(Boolean).length
-      : 0;
-    const total = state.spells.size + customCount;
-    if (total < grant.count) {
-      lockSection(4);
-      return;
-    }
-  }
-  unlockSection(4);
-  updateProgress();
-  markCompleted(3);
-  // Scroll to top of this section so user sees the summary, not the spell list
-  const sec3 = document.getElementById('sec-3');
-  if (sec3) setTimeout(() => sec3.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-}
-
-// ─────────────────────────────────────────────
-//  LOOT
-// ─────────────────────────────────────────────
-
-function renderLoot() {
-  const el = document.getElementById('loot-grid');
-  el.innerHTML = LOOT_POOL.map((item, i) => {
-    const sel = state.loot.has(i);
-    const full = state.loot.size >= MAX_LOOT && !sel;
-    return `
-      <div class="loot-item ${sel ? 'selected' : ''} ${full ? 'disabled' : ''}" data-action="loot" data-id="${i}" tabindex="0" role="checkbox">
-        <div class="loot-check">${sel ? '✓' : ''}</div>
-        <div class="loot-item-text">
-          <div class="loot-item-name">${item.name}</div>
-          <div class="loot-item-desc">${item.desc}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-  document.getElementById('loot-pts').textContent = MAX_LOOT - state.loot.size;
-}
-
-function toggleLoot(i) {
-  if (state.loot.has(i)) {
-    state.loot.delete(i);
-  } else if (state.loot.size < MAX_LOOT) {
-    state.loot.add(i);
-  }
-  renderLoot();
-  if (state.loot.size === MAX_LOOT) {
-    markCompleted(7);
-    updateProgress();
-    hide('loot-warn');
-  } else {
-    // Loot removed — revert step 7 back to active (incomplete)
-    const sec7 = document.getElementById('sec-7');
-    if (sec7) {
-      sec7.classList.remove('completed');
-      sec7.classList.add('active');
-    }
-    updateIncompleteList();
-  }
-}
-
-// ─────────────────────────────────────────────
-//  STORY
-// ─────────────────────────────────────────────
-
-function skipStory() {
-  const sec = document.getElementById('sec-1');
-  sec.classList.add('skipped');
-  sec.classList.remove('active');
-  // Unlock step 2 without marking step 1 complete
-  unlockSection(2);
-  updateProgress();
-}
-
-function onStoryInput() {
-  state.charName = document.getElementById('name-field').value.trim();
-  const val = document.getElementById('story-field').value.trim();
-  state.story = val;
-  document.getElementById('char-count').textContent = document.getElementById('story-field').value.length;
-  // Update persistent name in header
-  const nameDisplay = document.getElementById('header-name');
-  if (nameDisplay) nameDisplay.textContent = state.charName ? '— ' + state.charName + ' —' : '';
-  if (state.charName.length >= 1 && val.length >= 10) {
-    // Clear skipped state if they come back and complete it
-    const sec = document.getElementById('sec-1');
-    sec.classList.remove('skipped');
-    unlockSection(2);
-    markCompleted(1);
-    updateProgress();
-    hide('story-warn');
-  } else {
-    // Only lock step 2 if the user hasn't already skipped past step 1
-    const sec1 = document.getElementById('sec-1');
-    if (!sec1.classList.contains('skipped')) {
-      lockSection(2);
-    }
-  }
-}
-
-// ─────────────────────────────────────────────
-//  STATS
-// ─────────────────────────────────────────────
-
-function renderStats() {
-  const el = document.getElementById('stat-grid');
-  el.innerHTML = STATS.map(s => {
-    const bonus = state.bonusStats.includes(s) ? 1 : 0;
-    const total = state.statPts[s] + bonus;
-    const atFloor = state.statPts[s] <= 0;
-    return `
-      <div class="stat-row ${bonus ? 'has-bonus' : ''}">
-        <div class="stat-tooltip">${STAT_DESCS[s]}</div>
-        <div class="stat-name">${s.slice(0,3)}</div>
-        <div class="stepper">
-          <button onclick="changeStat('stat','${s}',-1)" ${atFloor?'disabled':''}>−</button>
-          <span class="val">${total}</span>
-          <button onclick="changeStat('stat','${s}',1)" ${state.statRemain<=0?'disabled':''}>+</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-  document.getElementById('stat-pts').textContent = state.statRemain;
-}
-
-function renderEffort() {
-  const el = document.getElementById('effort-grid');
-  el.innerHTML = EFFORTS.map(s => {
-    const bonus = state.bonusStats.includes(s) ? 1 : 0;
-    const total = state.effortPts[s] + bonus;
-    const atFloor = state.effortPts[s] <= 0;
-    return `
-      <div class="stat-row ${bonus ? 'has-bonus' : ''}">
-        <div class="stat-tooltip">${EFFORT_DESCS[s]}</div>
-        <div class="stat-name">${s}</div>
-        <div class="stepper">
-          <button onclick="changeStat('effort','${s}',-1)" ${atFloor?'disabled':''}>−</button>
-          <span class="val">${total}</span>
-          <button onclick="changeStat('effort','${s}',1)" ${state.effortRemain<=0?'disabled':''}>+</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-  document.getElementById('effort-pts').textContent = state.effortRemain;
-}
-
-function changeStat(pool, stat, dir) {
-  if (pool === 'stat') {
-    const newVal = state.statPts[stat] + dir;
-    if (newVal < 0) return;
-    if (dir > 0 && state.statRemain <= 0) return;
-    state.statPts[stat] = newVal;
-    state.statRemain -= dir;
-    renderStats();
-    if (state.statRemain === 0) {
-      unlockSection(6);
-      markCompleted(5);
-      updateProgress();
-    } else {
-      // Points removed — mark step 5 as back to active (incomplete)
-      const sec5 = document.getElementById('sec-5');
-      if (sec5) {
-        sec5.classList.remove('completed');
-        sec5.classList.add('active');
-      }
-    }
-  } else {
-    const newVal = state.effortPts[stat] + dir;
-    if (newVal < 0) return;
-    if (dir > 0 && state.effortRemain <= 0) return;
-    state.effortPts[stat] = newVal;
-    state.effortRemain -= dir;
-    renderEffort();
-    if (state.effortRemain === 0) {
-      unlockSection(7);
-      markCompleted(6);
-      updateProgress();
-    } else {
-      // Points removed — mark step 6 as back to active (incomplete)
-      const sec6 = document.getElementById('sec-6');
-      if (sec6) {
-        sec6.classList.remove('completed');
-        sec6.classList.add('active');
-      }
-    }
-  }
-  updateIncompleteList();
-}
-
-// ─────────────────────────────────────────────
-//  COPY SHEET
-// ─────────────────────────────────────────────
-
-function copySheet() {
-  const lf = LIFEFORMS.find(l => l.id === state.lifeform);
-  const tp = TYPES.find(t => t.id === state.type);
-  const chosenAbility = tp.abilities.find(a => a.id === state.typeAbility);
-  const chosenTypeLoot = tp.lootOptions.find(l => l.id === state.typeLoot);
-  const chosenLoot = [...state.loot].map(i => LOOT_POOL[i].name);
-  const allLoot = [chosenTypeLoot ? chosenTypeLoot.name : '', ...chosenLoot].filter(Boolean);
-
-  const grant = SPELL_GRANTS[state.typeLoot];
-  let spellLines = '';
-  if (grant) {
-    const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
-    const pickedSpells = [...state.spells].map(id => spellList.find(s => s.id === id)).filter(Boolean);
-    const customEntries = state.customSpells ? state.customSpells.split(',').map(s => s.trim()).filter(Boolean) : [];
-    const spellEntries = [
-      ...pickedSpells.map(sp => `  • ${sp.name}: ${sp.desc}`),
-      ...customEntries.map(s => `  • ${s}`),
-    ];
-    spellLines = `\nSTARTING SPELLS\n${spellEntries.join('\n')}`;
-  }
-
-  const STATS_LIST = ['STRENGTH','DEXTERITY','CONSTITUTION','INTELLIGENCE','WISDOM','CHARISMA'];
-  const EFFORTS_LIST = ['BASIC','WEAPON','MAGIC','ULTIMATE'];
-
-  const statLines = STATS_LIST.map(s => {
-    const val = state.statPts[s] + (state.bonusStats.includes(s) ? 1 : 0);
-    return `  ${s}: ${val}`;
-  }).join('\n');
-
-  const effortLines = EFFORTS_LIST.map(s => {
-    const val = state.effortPts[s] + (state.bonusStats.includes(s) ? 1 : 0);
-    return `  ${s}: ${val}`;
-  }).join('\n');
-
-  const con = state.statPts['CONSTITUTION'] + (state.bonusStats.includes('CONSTITUTION') ? 1 : 0);
-  const defenseFromLoot = [...state.loot].reduce((acc, i) => {
-    const item = LOOT_POOL[i];
-    const match = item.desc.match(/\+(\d+) DEFENSE/);
-    return acc + (match ? parseInt(match[1]) : 0);
-  }, 0);
-  const totalDefense = Math.min(20, 10 + con + defenseFromLoot);
-
-  const text = [
-    `════════════════════════════════`,
-    `  ${state.charName.toUpperCase()}`,
-    `  ${lf.name} ${tp.name}`,
-    `════════════════════════════════`,
-    ``,
-    `STORY`,
-    `  "${state.story}"`,
-    ``,
-    `CORE`,
-    `  HP: 10`,
-    `  DEFENSE: ${totalDefense} (10 + CON ${con}${defenseFromLoot ? ' + gear ' + defenseFromLoot : ''}${totalDefense === 20 ? ' · MAX' : ''})`,
-    ``,
-    `STARTING ABILITY & LOOT`,
-    `  ${chosenAbility.name}`,
-    `  ${chosenAbility.text}`,
-    ``,
-    `  ${chosenTypeLoot ? chosenTypeLoot.name : ''}`,
-    `  ${chosenTypeLoot ? chosenTypeLoot.text : ''}`,
-    ``,
-    `STATS`,
-    statLines,
-    ``,
-    `EFFORT`,
-    effortLines,
-    ``,
-    `BASIC LOOT`,
-    ...[...state.loot].map(i => `  • ${LOOT_POOL[i].name}: ${LOOT_POOL[i].desc}`),
-    spellLines,
-  ].join('\n');
-
-  navigator.clipboard.writeText(text).then(() => {
-    // Flash bottom copy button
-    const btn = document.getElementById('copy-btn');
-    if (btn) {
-      btn.textContent = '✦ Copied!';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = '⊕ Copy to Clipboard';
-        btn.classList.remove('copied');
-      }, 2000);
-    }
-    // Flash icon button in modal header
-    const icon = document.getElementById('modal-copy-icon');
-    if (icon) {
-      icon.classList.add('copied');
-      setTimeout(() => icon.classList.remove('copied'), 2000);
-    }
-  });
-}
-
-// ─────────────────────────────────────────────
-//  FINALIZE
-// ─────────────────────────────────────────────
-
-function finalizeCharacter() {
-  // Guard: name and story must be complete before finalizing
-  const name = document.getElementById('name-field').value.trim();
-  const story = document.getElementById('story-field').value.trim();
-  if (!name || story.length < 10) {
-    const sec = document.getElementById('sec-1');
-    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    sec.classList.add('skipped'); // keep the yellow highlight
-    document.getElementById('story-warn').classList.add('visible');
-    document.getElementById('story-warn').textContent = 'You skipped this step — add a name and story before finalizing.';
-    return;
-  }
-
-  const lf = LIFEFORMS.find(l => l.id === state.lifeform);
-  const tp = TYPES.find(t => t.id === state.type);
-  const chosenAbility = tp.abilities.find(a => a.id === state.typeAbility);
-  const chosenTypeLoot = tp.lootOptions.find(l => l.id === state.typeLoot);
-
-  document.getElementById('out-name').textContent = state.charName || '— CHARACTER SHEET —';
-  document.getElementById('out-stamp').textContent =
-    `LIFEFORM: ${lf.name} · TYPE: ${tp.name} · FINALIZED`;
-  document.getElementById('out-story').textContent = state.story;
-
-  // Core stats: HP and Defense
-  const con = state.statPts['CONSTITUTION'] + (state.bonusStats.includes('CONSTITUTION') ? 1 : 0);
-  const defenseFromLoot = [...state.loot].reduce((acc, i) => {
-    const item = LOOT_POOL[i];
-    const match = item.desc.match(/\+(\d+) DEFENSE/);
-    return acc + (match ? parseInt(match[1]) : 0);
-  }, 0);
-  const totalDefense = Math.min(20, 10 + con + defenseFromLoot);
-
-  document.getElementById('out-core').innerHTML = `
-    <div class="sheet-stat-box">
-      <div class="ss-name">HP</div>
-      <div class="ss-val">10</div>
-    </div>
-    <div class="sheet-stat-box">
-      <div class="ss-name">DEFENSE</div>
-      <div class="ss-val">${totalDefense}</div>
-      <div class="ss-bonus">10 + CON(${con})${defenseFromLoot ? ' + gear(' + defenseFromLoot + ')' : ''}${totalDefense === 20 ? ' · MAX' : ''}</div>
-    </div>
-  `;
-
-  // Merged ability + starting loot block
-  const abilityLootEl = document.getElementById('out-ability-loot');
-  abilityLootEl.innerHTML = `
-    <div class="sheet-item-card">
-      <div class="sheet-item-name">${chosenAbility ? chosenAbility.name : ''}</div>
-      <div class="sheet-item-desc">${chosenAbility ? chosenAbility.text : ''}</div>
-    </div>
-    <div class="sheet-item-card">
-      <div class="sheet-item-name">${chosenTypeLoot ? chosenTypeLoot.name : ''}</div>
-      <div class="sheet-item-desc">${chosenTypeLoot ? chosenTypeLoot.text : ''}</div>
-    </div>
-  `;
-
-  // Stats
-  const statEl = document.getElementById('out-stats');
-  statEl.innerHTML = STATS.map(s => {
-    const base = state.statPts[s];
-    const bonus = state.bonusStats.includes(s) ? 1 : 0;
-    return `
-      <div class="sheet-stat-box">
-        <div class="ss-name">${s.slice(0,3)}</div>
-        <div class="ss-val">${base + bonus}</div>
-        
-      </div>
-    `;
-  }).join('');
-
-  // Effort
-  const effEl = document.getElementById('out-effort');
-  effEl.innerHTML = EFFORTS.map(s => {
-    const base = state.effortPts[s];
-    const bonus = state.bonusStats.includes(s) ? 1 : 0;
-    return `
-      <div class="sheet-stat-box">
-        <div class="ss-name">${s}</div>
-        <div class="ss-val">${base + bonus}</div>
-        
-      </div>
-    `;
-  }).join('');
-
-  // Basic loot with full descriptions
-  const lootEl = document.getElementById('out-loot');
-  lootEl.innerHTML = [...state.loot].map(i => {
-    const item = LOOT_POOL[i];
-    return `
-      <div class="sheet-item-card">
-        <div class="sheet-item-name">${item.name}</div>
-        <div class="sheet-item-desc">${item.desc}</div>
-      </div>
-    `;
-  }).join('');
-
-  // Spells with full descriptions
-  const spellsBlock = document.getElementById('out-spells-block');
-  const grant = SPELL_GRANTS[state.typeLoot];
-  if (grant) {
-    const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
-    const pickedSpells = [...state.spells]
-      .map(id => spellList.find(s => s.id === id))
-      .filter(Boolean);
-    const customEntries = state.customSpells
-      ? state.customSpells.split(',').map(s => s.trim()).filter(Boolean)
-      : [];
-
-    document.getElementById('out-spells').innerHTML = [
-      ...pickedSpells.map(sp => `
-        <div class="sheet-item-card">
-          <div class="sheet-item-name">${sp.name}</div>
-          <div class="sheet-item-desc">${sp.desc}</div>
-        </div>
-      `),
-      ...customEntries.map(s => `
-        <div class="sheet-item-card">
-          <div class="sheet-item-name">${s}</div>
-        </div>
-      `),
-    ].join('');
-    spellsBlock.style.display = 'block';
-  } else {
-    spellsBlock.style.display = 'none';
-  }
-
-  const modal = document.getElementById('sheet-modal');
-  modal.classList.add('open');
-  modal.scrollTop = 0;
-  document.body.style.overflow = 'hidden';
-
-  // Success flash on the finalize button
-  const btn = document.getElementById('submit-btn');
-  btn.textContent = '✦ Character Sheet Ready ✦';
-  btn.classList.add('success');
-  setTimeout(() => {
-    btn.textContent = '◆ Finalize Character Sheet ◆';
-    btn.classList.remove('success');
-  }, 2500);
-}
-
-function closeSheet() {
-  const modal = document.getElementById('sheet-modal');
-  modal.classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// ─────────────────────────────────────────────
-//  COLLAPSE / SUMMARY
-// ─────────────────────────────────────────────
-
-function toggleSection(num) {
-  // Collapse removed — no-op stub
-}
-
-function updateSummary(num) {
-  const lf = state.lifeform ? LIFEFORMS.find(l => l.id === state.lifeform) : null;
-  const tp = state.type ? TYPES.find(t => t.id === state.type) : null;
-  const ab = tp && state.typeAbility ? tp.abilities.find(a => a.id === state.typeAbility) : null;
-  const tl = tp && state.typeLoot ? tp.lootOptions.find(l => l.id === state.typeLoot) : null;
-
-  if (num === 1) {
-    const n = document.getElementById('sum-1-name');
-    const s = document.getElementById('sum-1-story');
-    if (n) n.textContent = state.charName || '';
-    if (s) s.textContent = state.story ? state.story.slice(0, 50) + (state.story.length > 50 ? '…' : '') : '';
-  }
-  if (num === 2) {
-    const el = document.getElementById('sum-2-lifeform');
-    if (el) el.textContent = lf ? lf.name : '';
-  }
-  if (num === 3) {
-    const t = document.getElementById('sum-3-type');
-    const a = document.getElementById('sum-3-ability');
-    const l = document.getElementById('sum-3-loot');
-    if (t) t.textContent = tp ? tp.name : '';
-    if (a) a.textContent = ab ? ab.name : '';
-    if (l) l.textContent = tl ? tl.name : '';
-  }
-  if (num === 4) {
-    const b1 = document.getElementById('sum-4-b1');
-    const b2 = document.getElementById('sum-4-b2');
-    if (b1) b1.textContent = state.bonusStats[0] ? '+1 ' + state.bonusStats[0].slice(0,3) : '';
-    if (b2) b2.textContent = state.bonusStats[1] ? '+1 ' + state.bonusStats[1].slice(0,3) : '';
-  }
-  if (num === 5) {
-    const el = document.getElementById('sum-5-stats');
-    if (el) el.textContent = STATS.map(s => {
-      const v = state.statPts[s] + (state.bonusStats.includes(s) ? 1 : 0);
-      return s.slice(0,3) + ' ' + v;
-    }).join(' · ');
-  }
-  if (num === 6) {
-    const el = document.getElementById('sum-6-effort');
-    if (el) el.textContent = EFFORTS.map(s => {
-      const v = state.effortPts[s] + (state.bonusStats.includes(s) ? 1 : 0);
-      return s.slice(0,3) + ' ' + v;
-    }).join(' · ');
-  }
-  if (num === 7) {
-    const el = document.getElementById('sum-7-loot');
-    if (el) el.textContent = [...state.loot].map(i => LOOT_POOL[i].name).join(' · ');
-  }
-}
-
-// ─────────────────────────────────────────────
-//  START OVER
-// ─────────────────────────────────────────────
-
-function startOver() {
-  if (!confirm('Start over? All choices will be cleared.')) return;
-  closeSheet();
-  // Reset state
-  state.lifeform = null;
-  state.bonusStats = [];
-  state.bonusRolled = false;
-  state.type = null;
-  state.typeAbility = null;
-  state.typeLoot = null;
-  state.spells = new Set();
-  state.customSpells = '';
-  state.loot = new Set();
-  state.charName = '';
-  state.story = '';
-  state.statPts = { STRENGTH:0, DEXTERITY:0, CONSTITUTION:0, INTELLIGENCE:0, WISDOM:0, CHARISMA:0 };
-  state.statRemain = 6;
-  state.effortPts = { BASIC:0, WEAPON:0, MAGIC:0, ULTIMATE:0 };
-  state.effortRemain = 4;
-
-  // Reset UI
-  document.getElementById('name-field').value = '';
-  document.getElementById('story-field').value = '';
-  document.getElementById('char-count').textContent = '0';
-  document.getElementById('header-name').textContent = '';
-  document.getElementById('roll-btn').style.display = '';
-  document.getElementById('roll-results').innerHTML = '';
-  document.getElementById('type-sub').style.display = 'none';
-  const triggerSec = document.getElementById('spell-trigger-section');
-  if (triggerSec) triggerSec.style.display = 'none';
-  const customField = document.getElementById('custom-spells-field');
-  if (customField) customField.value = '';
-
-  // Reset all sections
-  [1,2,3,4,5,6,7].forEach(n => {
-    const sec = document.getElementById(`sec-${n}`);
-    sec.classList.remove('completed', 'active', 'skipped', 'expanded', 'locked');
-    const body = sec.querySelector('.section-body');
-    if (body) body.style.display = '';
-    if (n === 1) {
-      sec.classList.add('active');
-    } else {
-      sec.classList.add('locked');
-      sec.setAttribute('inert', '');
-    }
-  });
-
-  // Re-render
-  renderLifeforms();
-  renderTypes();
-  renderLoot();
-  renderStats();
-  renderEffort();
-  updateProgress();
-
-  // Hide sheet output, disable finalize
-  
-  document.getElementById('submit-btn').disabled = true;
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ─────────────────────────────────────────────
-//  RANDOM CHARACTER
 // ─────────────────────────────────────────────
 
 const RANDOM_NAMES = [
@@ -2758,256 +1870,724 @@ const RANDOM_NAMES = [
   'Snoh','Indiana','Sapphire','Locke','Kassandra',
 ];
 
-function randomizeCharacter() {
-  if (state.type || state.lifeform) {
-    if (!confirm('Generate a random character? This will clear all current choices.')) return;
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+
+const MAX_LOOT = 4;
+const MAX_STAT = 6;
+const MAX_EFFORT = 4;
+const MIN_STORY = 10;
+const MAX_DEFENSE = 20;
+
+const STEP_LABELS = {
+  1: 'Name & Story',
+  2: 'Lifeform',
+  3: 'Type, Ability & Starting Loot',
+  4: 'Roll Bonus Stats',
+  5: 'Assign 6 Stat Points',
+  6: 'Assign 4 Effort Points',
+  7: 'Choose 4 Basic Loot',
+};
+
+function freshState() {
+  return {
+    charName: '',
+    story: '',
+    lifeform: null,
+    type: null,
+    typeAbility: null,
+    typeLoot: null,
+    spells: new Set(),
+    customSpells: '',
+    bonusStats: [],
+    statPts:   Object.fromEntries(STATS.map(s => [s, 0])),
+    effortPts: Object.fromEntries(EFFORTS.map(s => [s, 0])),
+    loot: new Set(),
+    touched: new Set(),   // steps the player has interacted with
+  };
+}
+
+let state = freshState();
+
+// ─────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────
+
+const $ = id => document.getElementById(id);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const shuffle = arr => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
+  return a;
+};
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-  // Reset first
-  startOverSilent();
+const statRemain   = () => MAX_STAT   - Object.values(state.statPts).reduce((a, b) => a + b, 0);
+const effortRemain = () => MAX_EFFORT - Object.values(state.effortPts).reduce((a, b) => a + b, 0);
+const bonusFor     = key => state.bonusStats.includes(key) ? 1 : 0;
+const statTotal    = s => state.statPts[s] + bonusFor(s);
+const effortTotal  = s => state.effortPts[s] + bonusFor(s);
 
-  // Pick random name
-  const randomName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
-  state.charName = randomName;
-  document.getElementById('name-field').value = randomName;
-  const nameDisplay = document.getElementById('header-name');
-  if (nameDisplay) nameDisplay.textContent = '— ' + randomName + ' —';
+const currentType    = () => TYPES.find(t => t.id === state.type) || null;
+const currentAbility = () => currentType()?.abilities.find(a => a.id === state.typeAbility) || null;
+const currentTypeLoot= () => currentType()?.lootOptions.find(l => l.id === state.typeLoot) || null;
+const currentGrant   = () => SPELL_GRANTS[state.typeLoot] || null;
+const spellListFor   = grant => grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
 
-  // Pick random lifeform
-  state.lifeform = LIFEFORMS[Math.floor(Math.random() * LIFEFORMS.length)].id;
+function customSpellList() {
+  return state.customSpells.split(',').map(s => s.trim()).filter(Boolean);
+}
 
-  // Pick random type
-  const tp = TYPES[Math.floor(Math.random() * TYPES.length)];
-  state.type = tp.id;
-  state.typeAbility = tp.abilities[Math.floor(Math.random() * tp.abilities.length)].id;
-  const lootOpt = tp.lootOptions[Math.floor(Math.random() * tp.lootOptions.length)];
-  state.typeLoot = lootOpt.id;
+function chosenSpells() {
+  const grant = currentGrant();
+  if (!grant) return [];
+  const list = spellListFor(grant);
+  return [...state.spells].map(id => list.find(s => s.id === id)).filter(Boolean);
+}
 
-  // Handle spell grants — pick randomly and update trigger UI
-  const grant = SPELL_GRANTS[lootOpt.id];
-  if (grant) {
-    const spellList = grant.list === 'INT' ? INT_SPELLS : grant.list === 'CHA' ? CHA_SPELLS : WIS_SPELLS;
-    const shuffled = [...spellList].sort(() => Math.random() - 0.5);
-    state.spells = new Set(shuffled.slice(0, grant.count).map(s => s.id));
-    // Show and update trigger button
-    const triggerSection = document.getElementById('spell-trigger-section');
-    if (triggerSection) triggerSection.style.display = 'block';
-    const btn = document.getElementById('spell-trigger-btn');
-    const status = document.getElementById('spell-trigger-status');
-    if (btn) {
-      const pickedNames = [...state.spells].map(id => spellList.find(s => s.id === id)?.name).filter(Boolean);
-      btn.textContent = `✓ ${grant.count} Spell${grant.count > 1 ? 's' : ''} Chosen — Edit`;
-      btn.classList.add('complete');
-      if (status) {
-        status.textContent = pickedNames.join(', ');
-        status.classList.add('done');
-      }
+function spellCount() {
+  return state.spells.size + customSpellList().length;
+}
+
+function defenseBreakdown() {
+  const con = statTotal('CONSTITUTION');
+  const sources = [...[...state.loot].map(i => LOOT_POOL[i].desc), currentTypeLoot()?.text || ''];
+  const gear = sources.reduce((sum, text) => {
+    const m = text.match(/\+(\d+)\s*DEF(?:ENSE)?\b/);
+    return sum + (m ? parseInt(m[1], 10) : 0);
+  }, 0);
+  const raw = 10 + con + gear;
+  return { con, gear, total: Math.min(MAX_DEFENSE, raw), capped: raw >= MAX_DEFENSE };
+}
+
+// ─────────────────────────────────────────────
+//  STEP STATUS — single source of truth
+// ─────────────────────────────────────────────
+
+function isStepComplete(n) {
+  switch (n) {
+    case 1: return state.charName.length > 0 && state.story.length >= MIN_STORY;
+    case 2: return !!state.lifeform;
+    case 3: {
+      if (!state.type || !state.typeAbility || !state.typeLoot) return false;
+      const grant = currentGrant();
+      return !grant || spellCount() >= grant.count;
     }
+    case 4: return state.bonusStats.length === 2;
+    case 5: return statRemain() === 0;
+    case 6: return effortRemain() === 0;
+    case 7: return state.loot.size === MAX_LOOT;
+  }
+  return false;
+}
+
+function refreshStatus() {
+  const incomplete = [];
+  for (let n = 1; n <= 7; n++) {
+    const sec = $(`sec-${n}`);
+    const done = isStepComplete(n);
+    sec.classList.toggle('completed', done);
+    sec.classList.toggle('active', !done && state.touched.has(n));
+    if (!done) incomplete.push(n);
   }
 
-  // Roll bonus stats
-  const pool = [...ALL_STAT_EFFORT];
-  const picks = [];
-  while (picks.length < 2) {
-    picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
-  }
-  state.bonusStats = picks;
-  state.bonusRolled = true;
+  $('progress-bar').style.width = Math.round(((7 - incomplete.length) / 7) * 100) + '%';
 
-  // Distribute 6 stat points randomly
-  let statPtsLeft = 6;
-  while (statPtsLeft > 0) {
-    const s = STATS[Math.floor(Math.random() * STATS.length)];
-    state.statPts[s]++;
-    statPtsLeft--;
-  }
-  state.statRemain = 0;
+  const btn = $('submit-btn');
+  btn.disabled = incomplete.length > 0;
 
-  // Distribute 4 effort points randomly
-  let effortPtsLeft = 4;
-  while (effortPtsLeft > 0) {
-    const s = EFFORTS[Math.floor(Math.random() * EFFORTS.length)];
-    state.effortPts[s]++;
-    effortPtsLeft--;
-  }
-  state.effortRemain = 0;
+  const list = $('incomplete-list');
+  list.innerHTML = incomplete.length === 0 ? '' : `
+    <div class="incomplete-header">These steps still need to be completed:</div>
+    <div class="incomplete-pills">
+      ${incomplete.map(n => `<button type="button" class="incomplete-item" data-goto="${n}">${STEP_LABELS[n]}</button>`).join('')}
+    </div>`;
+}
 
-  // Pick 4 random basic loot
-  const lootIndices = [...Array(LOOT_POOL.length).keys()].sort(() => Math.random() - 0.5);
-  state.loot = new Set(lootIndices.slice(0, 4));
+function touch(n) {
+  state.touched.add(n);
+  refreshStatus();
+}
 
-  // Update all UI
+// ─────────────────────────────────────────────
+//  STEP 1 — NAME & STORY
+// ─────────────────────────────────────────────
+
+function onStoryInput() {
+  state.charName = $('name-field').value.trim();
+  state.story = $('story-field').value.trim();
+  $('char-count').textContent = $('story-field').value.length;
+  renderHeaderName();
+  touch(1);
+}
+
+function renderHeaderName() {
+  $('header-name').textContent = state.charName ? `— ${state.charName} —` : '';
+}
+
+// ─────────────────────────────────────────────
+//  STEP 2 — LIFEFORM
+// ─────────────────────────────────────────────
+
+function renderLifeforms() {
+  $('lifeform-cards').innerHTML = LIFEFORMS.map(lf => {
+    const sel = state.lifeform === lf.id;
+    return `
+      <div class="choice-card ${sel ? 'selected' : ''}" data-action="lifeform" data-id="${lf.id}" tabindex="0" role="radio" aria-checked="${sel}">
+        <div class="card-name">${esc(lf.name)}</div>
+      </div>`;
+  }).join('');
+}
+
+function selectLifeform(id) {
+  state.lifeform = id;
   renderLifeforms();
+  touch(2);
+}
+
+// ─────────────────────────────────────────────
+//  STEP 3 — TYPE, ABILITY, STARTING LOOT, SPELLS
+// ─────────────────────────────────────────────
+
+function renderTypes() {
+  $('type-cards').innerHTML = TYPES.map(t => {
+    const sel = state.type === t.id;
+    return `
+      <div class="type-card ${sel ? 'selected' : ''}" data-action="type" data-id="${t.id}" tabindex="0" role="radio" aria-checked="${sel}">
+        <div class="type-name">${esc(t.name)}</div>
+        <div class="type-ability">${esc(t.desc)}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderTypeSub() {
+  const tp = currentType();
+  $('type-sub').style.display = tp ? 'block' : 'none';
+  if (!tp) { renderSpellTrigger(); return; }
+
+  $('ability-cards').innerHTML = tp.abilities.map(a => {
+    const sel = state.typeAbility === a.id;
+    return `
+      <div class="sub-card ${sel ? 'selected' : ''}" data-action="ability" data-id="${a.id}" tabindex="0" role="radio" aria-checked="${sel}">
+        <div class="sub-name">${esc(a.name)}</div>
+        <div class="sub-text">${esc(a.text)}</div>
+      </div>`;
+  }).join('');
+
+  $('loot-type-cards').innerHTML = tp.lootOptions.map(l => {
+    const sel = state.typeLoot === l.id;
+    return `
+      <div class="sub-card ${sel ? 'selected' : ''}" data-action="typeloot" data-id="${l.id}" tabindex="0" role="radio" aria-checked="${sel}">
+        <div class="sub-name">${esc(l.name)}</div>
+        <div class="sub-text">${esc(l.text)}</div>
+      </div>`;
+  }).join('');
+
+  renderSpellTrigger();
+}
+
+function clearSpells() {
+  state.spells = new Set();
+  state.customSpells = '';
+  $('custom-spells-field').value = '';
+}
+
+function selectType(id) {
+  if (state.type === id) return;
+  if (state.typeAbility || state.typeLoot || state.spells.size) {
+    if (!confirm('Changing your Type will clear your Ability, Starting Loot and Spell choices. Continue?')) return;
+  }
+  state.type = id;
+  state.typeAbility = null;
+  state.typeLoot = null;
+  clearSpells();
   renderTypes();
-  renderLoot();
+  renderTypeSub();
+  touch(3);
+}
+
+function selectTypeAbility(id) {
+  state.typeAbility = id;
+  renderTypeSub();
+  touch(3);
+}
+
+function selectTypeLoot(id) {
+  if (state.typeLoot !== id) clearSpells();
+  state.typeLoot = id;
+  renderTypeSub();
+  touch(3);
+}
+
+function renderSpellTrigger() {
+  const grant = currentGrant();
+  const section = $('spell-trigger-section');
+  section.style.display = grant ? 'block' : 'none';
+  if (!grant) return;
+
+  const btn = $('spell-trigger-btn');
+  const status = $('spell-trigger-status');
+  const count = spellCount();
+  const label = `${grant.list} ${grant.count === 1 ? 'Spell' : 'Spells'}`;
+
+  if (count >= grant.count) {
+    btn.textContent = `✓ ${label} Chosen — Edit`;
+    btn.classList.add('complete');
+    status.textContent = [...chosenSpells().map(s => s.name), ...customSpellList()].join(', ');
+    status.classList.add('done');
+  } else {
+    btn.textContent = `Choose ${grant.count} ${label} → (${count}/${grant.count})`;
+    btn.classList.remove('complete');
+    status.textContent = '';
+    status.classList.remove('done');
+  }
+}
+
+function openSpellPicker() {
+  const grant = currentGrant();
+  if (!grant) return;
+  $('spell-modal-title').textContent = `Choose ${grant.count} ${grant.list} ${grant.count === 1 ? 'Spell' : 'Spells'}`;
+  $('spell-modal-stamp').textContent = `Roll ${grant.list} to cast`;
+  $('custom-spells-field').value = state.customSpells;
+  renderSpellPicker();
+  openModal('spell-modal');
+}
+
+function closeSpellPicker() {
+  closeModal('spell-modal');
+  renderSpellTrigger();
+  refreshStatus();
+}
+
+function renderSpellPicker() {
+  const grant = currentGrant();
+  if (!grant) return;
+  const remaining = Math.max(0, grant.count - spellCount());
+  $('spell-counter').innerHTML = `<span>Spells Remaining:</span><span class="pts-num">${remaining}</span>`;
+
+  const full = spellCount() >= grant.count;
+  $('spell-grid').innerHTML = spellListFor(grant).map(sp => {
+    const sel = state.spells.has(sp.id);
+    return `
+      <div class="spell-card ${sel ? 'selected' : ''} ${full && !sel ? 'disabled' : ''}" data-action="spell" data-id="${sp.id}" tabindex="0" role="checkbox" aria-checked="${sel}">
+        <div class="spell-check">${sel ? '✓' : ''}</div>
+        <div class="spell-card-text">
+          <div class="spell-card-name">${esc(sp.name)}</div>
+          <div class="spell-card-desc">${esc(sp.desc)}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleSpell(id) {
+  const grant = currentGrant();
+  if (!grant) return;
+  if (state.spells.has(id)) state.spells.delete(id);
+  else if (spellCount() < grant.count) state.spells.add(id);
+  renderSpellPicker();
+  renderSpellTrigger();
+  touch(3);
+}
+
+function onCustomSpellsInput() {
+  state.customSpells = $('custom-spells-field').value;
+  renderSpellPicker();
+  renderSpellTrigger();
+  touch(3);
+}
+
+// ─────────────────────────────────────────────
+//  STEP 4 — BONUS ROLL
+// ─────────────────────────────────────────────
+
+function rollBonusStats() {
+  if (state.bonusStats.length) return; // fate is fate — no re-rolls
+  state.bonusStats = shuffle(ALL_STAT_EFFORT).slice(0, 2);
+  renderRoll(true);
   renderStats();
   renderEffort();
+  touch(4);
+}
 
-  // Show type-sub panel
-  document.getElementById('type-sub').style.display = 'block';
-  const tpData = TYPES.find(t => t.id === state.type);
-  document.getElementById('ability-cards').innerHTML = tpData.abilities.map(a => `
-    <div class="sub-card ${state.typeAbility === a.id ? 'selected' : ''}" data-action="ability" data-id="${a.id}" tabindex="0" role="radio">
-      <div class="sub-name">${a.name}</div>
-      <div class="sub-text">${a.text}</div>
-    </div>
-  `).join('');
-  document.getElementById('loot-type-cards').innerHTML = tpData.lootOptions.map(l => `
-    <div class="sub-card ${state.typeLoot === l.id ? 'selected' : ''}" data-action="typeloot" data-id="${l.id}" tabindex="0" role="radio">
-      <div class="sub-name">${l.name}</div>
-      <div class="sub-text">${l.text}</div>
-    </div>
-  `).join('');
-
-  // Show roll result display
-  document.getElementById('roll-btn').style.display = 'none';
-  document.getElementById('roll-results').innerHTML = picks.map(s => `
-    <div class="rolled-stat">
+function renderRoll(fresh = false) {
+  const rolled = state.bonusStats.length > 0;
+  $('roll-btn').style.display = rolled ? 'none' : '';
+  const el = $('roll-results');
+  el.innerHTML = state.bonusStats.map(s => `
+    <div class="rolled-stat ${fresh ? 'fresh' : ''}">
       <div class="stat-label">${s}</div>
       <div class="stat-val">+1</div>
-    </div>
-  `).join('');
+    </div>`).join('');
+  if (fresh) setTimeout(() => el.querySelectorAll('.rolled-stat').forEach(e => e.classList.remove('fresh')), 600);
+}
 
-  // Mark all sections complete
-  [1,2,3,4,5,6,7].forEach(n => {
-    const sec = document.getElementById(`sec-${n}`);
-    sec.classList.remove('locked', 'active', 'skipped', 'expanded');
-    sec.removeAttribute('inert');
-    sec.classList.add('completed');
-    updateSummary(n);
-  });
+// ─────────────────────────────────────────────
+//  STEPS 5 & 6 — STATS / EFFORT
+// ─────────────────────────────────────────────
 
-  // Enable finalize
-  updateIncompleteList();
-  updateProgress();
+function statCell(pool, key, label, tip, total, assigned, remain) {
+  return `
+    <div class="stat-row ${bonusFor(key) ? 'has-bonus' : ''}" tabindex="0" aria-label="${key}: ${total}. ${esc(tip)}">
+      <div class="stat-tooltip" aria-hidden="true">${esc(tip)}</div>
+      <div class="stat-name">${label}</div>
+      <div class="stepper">
+        <button type="button" data-step="${pool}" data-key="${key}" data-dir="-1" aria-label="Decrease ${key}" ${assigned <= 0 ? 'disabled' : ''}>−</button>
+        <span class="val">${total}</span>
+        <button type="button" data-step="${pool}" data-key="${key}" data-dir="1" aria-label="Increase ${key}" ${remain <= 0 ? 'disabled' : ''}>+</button>
+      </div>
+    </div>`;
+}
+
+function renderStats() {
+  const remain = statRemain();
+  $('stat-grid').innerHTML = STATS.map(s =>
+    statCell('stat', s, s.slice(0, 3), STAT_DESCS[s], statTotal(s), state.statPts[s], remain)).join('');
+  $('stat-pts').textContent = remain;
+}
+
+function renderEffort() {
+  const remain = effortRemain();
+  $('effort-grid').innerHTML = EFFORTS.map(s =>
+    statCell('effort', s, s, EFFORT_DESCS[s], effortTotal(s), state.effortPts[s], remain)).join('');
+  $('effort-pts').textContent = remain;
+}
+
+function changeStat(pool, key, dir) {
+  const pts = pool === 'stat' ? state.statPts : state.effortPts;
+  const remain = pool === 'stat' ? statRemain() : effortRemain();
+  if (dir < 0 && pts[key] <= 0) return;
+  if (dir > 0 && remain <= 0) return;
+  pts[key] += dir;
+  if (pool === 'stat') { renderStats(); touch(5); }
+  else { renderEffort(); touch(6); }
+}
+
+// ─────────────────────────────────────────────
+//  STEP 7 — BASIC LOOT
+// ─────────────────────────────────────────────
+
+function renderLoot() {
+  const full = state.loot.size >= MAX_LOOT;
+  $('loot-grid').innerHTML = LOOT_POOL.map((item, i) => {
+    const sel = state.loot.has(i);
+    const canSwap = item.slot && [...state.loot].some(j => LOOT_POOL[j].slot === item.slot);
+    return `
+      <div class="loot-item ${sel ? 'selected' : ''} ${full && !sel && !canSwap ? 'disabled' : ''}" data-action="loot" data-id="${i}" tabindex="0" role="checkbox" aria-checked="${sel}">
+        <div class="loot-check">${sel ? '✓' : ''}</div>
+        <div class="loot-item-text">
+          <div class="loot-item-name">${esc(item.name)}</div>
+          <div class="loot-item-desc">${esc(item.desc)}</div>
+        </div>
+      </div>`;
+  }).join('');
+  $('loot-pts').textContent = MAX_LOOT - state.loot.size;
+}
+
+let noticeTimer = null;
+function lootNotice(msg) {
+  const el = $('loot-notice');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+function toggleLoot(i) {
+  const slot = LOOT_POOL[i].slot;
+  const sameSlot = slot ? [...state.loot].find(j => LOOT_POOL[j].slot === slot) : undefined;
+  if (state.loot.has(i)) state.loot.delete(i);
+  else if (sameSlot !== undefined) {           // only one armor / one shield — swap and tell the player
+    state.loot.delete(sameSlot);
+    state.loot.add(i);
+    lootNotice(`You can only ${slot === 'armor' ? 'wear one armor' : 'carry one shield'} — swapped ${LOOT_POOL[sameSlot].name} for ${LOOT_POOL[i].name}.`);
+  }
+  else if (state.loot.size < MAX_LOOT) state.loot.add(i);
+  renderLoot();
+  touch(7);
+}
+
+// ─────────────────────────────────────────────
+//  RENDER EVERYTHING
+// ─────────────────────────────────────────────
+
+function renderAll() {
+  $('name-field').value = state.charName;
+  $('story-field').value = state.story;
+  $('char-count').textContent = state.story.length;
+  $('custom-spells-field').value = state.customSpells;
+  renderHeaderName();
+  renderLifeforms();
+  renderTypes();
+  renderTypeSub();
+  renderRoll();
+  renderStats();
+  renderEffort();
+  renderLoot();
+  refreshStatus();
+}
+
+// ─────────────────────────────────────────────
+//  CHARACTER SHEET
+// ─────────────────────────────────────────────
+
+function itemCard(name, desc) {
+  return `
+    <div class="sheet-item-card">
+      <div class="sheet-item-name">${esc(name)}</div>
+      ${desc ? `<div class="sheet-item-desc">${esc(desc)}</div>` : ''}
+    </div>`;
+}
+
+function statBox(name, val, note = '') {
+  return `
+    <div class="sheet-stat-box">
+      <div class="ss-name">${name}</div>
+      <div class="ss-val">${val}</div>
+      ${note ? `<div class="ss-bonus">${note}</div>` : ''}
+    </div>`;
+}
+
+function finalizeCharacter() {
+  const firstMissing = [1,2,3,4,5,6,7].find(n => !isStepComplete(n));
+  if (firstMissing) { scrollToSection(firstMissing); return; }
+
+  const lf = LIFEFORMS.find(l => l.id === state.lifeform);
+  const tp = currentType();
+  const ab = currentAbility();
+  const tl = currentTypeLoot();
+  const def = defenseBreakdown();
+
+  $('out-name').textContent = state.charName;
+  $('out-stamp').textContent = `${lf.name} · ${tp.name}`;
+  $('out-story').textContent = state.story;
+
+  $('out-core').innerHTML =
+    statBox('HP', 10) +
+    statBox('DEFENSE', def.total,
+      `10 + CON ${def.con}${def.gear ? ` + gear ${def.gear}` : ''}${def.capped ? ' · MAX' : ''}`);
+
+  $('out-stats').innerHTML  = STATS.map(s => statBox(s.slice(0, 3), statTotal(s))).join('');
+  $('out-effort').innerHTML = EFFORTS.map(s => statBox(s, effortTotal(s))).join('');
+  $('out-ability-loot').innerHTML = itemCard(ab.name, ab.text) + itemCard(tl.name, tl.text);
+  $('out-loot').innerHTML = [...state.loot].map(i => itemCard(LOOT_POOL[i].name, LOOT_POOL[i].desc)).join('');
+
+  const grant = currentGrant();
+  $('out-spells-block').style.display = grant ? 'block' : 'none';
+  if (grant) {
+    $('out-spells').innerHTML =
+      chosenSpells().map(sp => itemCard(sp.name, sp.desc)).join('') +
+      customSpellList().map(s => itemCard(s, '')).join('');
+  }
+
+  openModal('sheet-modal');
+  $('sheet-modal').scrollTop = 0;
+
+  const btn = $('submit-btn');
+  btn.textContent = '✦ Character Sheet Ready ✦';
+  btn.classList.add('success');
+  setTimeout(() => {
+    btn.textContent = '◆ Finalize Character Sheet ◆';
+    btn.classList.remove('success');
+  }, 2500);
+}
+
+function closeSheet() { closeModal('sheet-modal'); }
+
+function sheetText() {
+  const lf = LIFEFORMS.find(l => l.id === state.lifeform);
+  const tp = currentType();
+  const ab = currentAbility();
+  const tl = currentTypeLoot();
+  const def = defenseBreakdown();
+  const lines = [
+    '════════════════════════════════',
+    `  ${state.charName.toUpperCase()}`,
+    `  ${lf.name} ${tp.name}`,
+    '════════════════════════════════',
+    '',
+    'STORY',
+    `  "${state.story}"`,
+    '',
+    'CORE',
+    '  HP: 10',
+    `  DEFENSE: ${def.total} (10 + CON ${def.con}${def.gear ? ` + gear ${def.gear}` : ''}${def.capped ? ' · MAX' : ''})`,
+    '',
+    'STATS',
+    ...STATS.map(s => `  ${s}: ${statTotal(s)}`),
+    '',
+    'EFFORT',
+    ...EFFORTS.map(s => `  ${s}: ${effortTotal(s)}`),
+    '',
+    'STARTING ABILITY & LOOT',
+    `  • ${ab.name}: ${ab.text}`,
+    `  • ${tl.name}: ${tl.text}`,
+    '',
+    'BASIC LOOT',
+    ...[...state.loot].map(i => `  • ${LOOT_POOL[i].name}: ${LOOT_POOL[i].desc}`),
+  ];
+  const grant = currentGrant();
+  if (grant) {
+    lines.push('', `STARTING SPELLS (${grant.list})`,
+      ...chosenSpells().map(sp => `  • ${sp.name}: ${sp.desc}`),
+      ...customSpellList().map(s => `  • ${s}`));
+  }
+  return lines.join('\n');
+}
+
+function copySheet() {
+  const text = sheetText();
+  const done = () => {
+    const btn = $('copy-btn');
+    btn.textContent = '✦ Copied!';
+    btn.classList.add('copied');
+    $('modal-copy-icon').classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '⊕ Copy to Clipboard';
+      btn.classList.remove('copied');
+      $('modal-copy-icon').classList.remove('copied');
+    }, 2000);
+  };
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); }
+    catch { alert('Could not copy automatically. Select the sheet text and copy it manually.'); }
+    ta.remove();
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done, fallback);
+  } else {
+    fallback();
+  }
+}
+
+// ─────────────────────────────────────────────
+//  MODALS
+// ─────────────────────────────────────────────
+
+let lastFocus = null;
+
+function openModal(id) {
+  lastFocus = document.activeElement;
+  $(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+  $(id).querySelector('.modal-close')?.focus();
+}
+
+function closeModal(id) {
+  const m = $(id);
+  if (!m.classList.contains('open')) return;
+  m.classList.remove('open');
+  if (!document.querySelector('.modal-overlay.open')) document.body.style.overflow = '';
+  lastFocus?.focus?.();
+}
+
+// ─────────────────────────────────────────────
+//  START OVER / RANDOM
+// ─────────────────────────────────────────────
+
+function startOver() {
+  if (!confirm('Start over? All choices will be cleared.')) return;
+  closeModal('sheet-modal');
+  closeModal('spell-modal');
+  state = freshState();
+  renderAll();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Silent reset used by randomize (no confirm, no scroll)
-function startOverSilent() {
-  state.lifeform = null;
-  state.bonusStats = [];
-  state.bonusRolled = false;
-  state.type = null;
-  state.typeAbility = null;
-  state.typeLoot = null;
-  state.spells = new Set();
-  state.customSpells = '';
-  state.loot = new Set();
-  state.charName = '';
-  state.story = '';
-  state.statPts = { STRENGTH:0, DEXTERITY:0, CONSTITUTION:0, INTELLIGENCE:0, WISDOM:0, CHARISMA:0 };
-  state.statRemain = 6;
-  state.effortPts = { BASIC:0, WEAPON:0, MAGIC:0, ULTIMATE:0 };
-  state.effortRemain = 4;
-  document.getElementById('header-name').textContent = '';
-  
-  updateIncompleteList();
+function randomizeCharacter() {
+  if (state.type || state.lifeform || state.loot.size || state.bonusStats.length) {
+    if (!confirm('Generate a random character? This will replace your current choices (your story is kept).')) return;
+  }
+  const keptStory = state.story;
+  state = freshState();
+  state.story = keptStory;
+
+  state.charName = pick(RANDOM_NAMES);
+  state.lifeform = pick(LIFEFORMS).id;
+
+  const tp = pick(TYPES);
+  state.type = tp.id;
+  state.typeAbility = pick(tp.abilities).id;
+  state.typeLoot = pick(tp.lootOptions).id;
+  const grant = currentGrant();
+  if (grant) state.spells = new Set(shuffle(spellListFor(grant)).slice(0, grant.count).map(s => s.id));
+
+  state.bonusStats = shuffle(ALL_STAT_EFFORT).slice(0, 2);
+  for (let i = 0; i < MAX_STAT; i++)   state.statPts[pick(STATS)]++;
+  for (let i = 0; i < MAX_EFFORT; i++) state.effortPts[pick(EFFORTS)]++;
+  for (const i of shuffle([...LOOT_POOL.keys()])) {
+    if (state.loot.size >= MAX_LOOT) break;
+    const slot = LOOT_POOL[i].slot;
+    if (slot && [...state.loot].some(j => LOOT_POOL[j].slot === slot)) continue;
+    state.loot.add(i);
+  }
+
+  [1,2,3,4,5,6,7].forEach(n => state.touched.add(n));
+  renderAll();
+
+  if (!isStepComplete(1)) {
+    scrollToSection(1);
+    $('story-field').focus({ preventScroll: true });
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
+
+function scrollToSection(n) {
+  $(`sec-${n}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─────────────────────────────────────────────
+//  EVENTS
 // ─────────────────────────────────────────────
 
-function unlockSection(num) {
-  const sec = document.getElementById(`sec-${num}`);
-  if (sec) {
-    sec.classList.remove('locked');
-    sec.classList.add('active');
-    sec.removeAttribute('inert');
-  }
-}
+document.addEventListener('click', e => {
+  const goto = e.target.closest('[data-goto]');
+  if (goto) { scrollToSection(+goto.dataset.goto); return; }
 
-function lockSection(num) {
-  // Locking removed — sections always accessible
-  // Kept as stub so existing call sites don't error
-}
+  const step = e.target.closest('[data-step]');
+  if (step) { changeStat(step.dataset.step, step.dataset.key, +step.dataset.dir); return; }
 
-function markCompleted(num) {
-  const sec = document.getElementById(`sec-${num}`);
-  if (sec) {
-    sec.classList.add('completed');
-    sec.classList.remove('active');
-    updateSummary(num);
-  }
-}
+  const card = e.target.closest('[data-action]');
+  if (!card) return;
+  const { action, id } = card.dataset;
+  if      (action === 'lifeform') selectLifeform(id);
+  else if (action === 'type')     selectType(id);
+  else if (action === 'ability')  selectTypeAbility(id);
+  else if (action === 'typeloot') selectTypeLoot(id);
+  else if (action === 'spell')    toggleSpell(id);
+  else if (action === 'loot')     toggleLoot(+id);
+});
 
-function hide(id) {
-  document.getElementById(id)?.classList.remove('visible');
-}
-
-function scrollToSection(num) {
-  const sec = document.getElementById(`sec-${num}`);
-  if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function updateProgress() {
-  const completed = [1,2,3,4,5,6,7].filter(n => {
-    const el = document.getElementById(`sec-${n}`);
-    return el && el.classList.contains('completed');
-  }).length;
-  const pct = Math.round((completed / 7) * 100);
-  document.getElementById('progress-bar').style.width = pct + '%';
-  updateIncompleteList();
-}
-
-function updateIncompleteList() {
-  const STEP_LABELS = {
-    1: 'Name & Story',
-    2: 'Lifeform',
-    3: 'Type, Ability & Starting Loot',
-    4: 'Roll Bonus Stats',
-    5: 'Assign 6 Stat Points',
-    6: 'Assign 4 Effort Points',
-    7: 'Choose 4 Basic Loot',
-  };
-
-  const incomplete = [1,2,3,4,5,6,7].filter(n => {
-    const el = document.getElementById(`sec-${n}`);
-    return el && !el.classList.contains('completed');
-  });
-
-  // Also check step 5 and 6 specifically for remaining points, step 7 for loot count
-  if (!incomplete.includes(5) && state.statRemain > 0) incomplete.push(5);
-  if (!incomplete.includes(6) && state.effortRemain > 0) incomplete.push(6);
-  if (!incomplete.includes(7) && state.loot.size < MAX_LOOT) incomplete.push(7);
-  const uniqueIncomplete = [...new Set(incomplete)].sort((a,b) => a-b);
-
-  const list = document.getElementById('incomplete-list');
-  if (!list) return;
-
-  if (uniqueIncomplete.length === 0) {
-    list.innerHTML = '';
-    document.getElementById('submit-btn').disabled = false;
-  } else {
-    list.innerHTML = `
-      <div class="incomplete-header">These steps still need to be completed:</div>
-      <div class="incomplete-pills">
-        ${uniqueIncomplete.map(n => `<div class="incomplete-item" onclick="scrollToSection(${n})" title="Go to Step ${n.toString().padStart(2,'0')}">${STEP_LABELS[n]}</div>`).join('')}
-      </div>
-    `;
-    document.getElementById('submit-btn').disabled = true;
-  }
-}
-
-// Keyboard support for data-action cards
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    closeSheet();
-    closeSpellPicker();
+    if ($('spell-modal').classList.contains('open')) closeSpellPicker();
+    else closeSheet();
     return;
   }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   const card = e.target.closest('[data-action]');
-  if (!card) return;
+  if (!card || e.target.matches('input, textarea, button')) return;
   e.preventDefault();
   card.click();
 });
 
-// Close modals on backdrop click
-document.getElementById('sheet-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeSheet();
-});
-document.getElementById('spell-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeSpellPicker();
-});
+$('sheet-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeSheet(); });
+$('spell-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeSpellPicker(); });
+
+renderAll();
+
 </script>
 </body>
 </html>
